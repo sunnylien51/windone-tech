@@ -3,7 +3,9 @@
         <div class="layout-grid pt-16 lg:pt-20 pb-10 flex flex-col gap-12 lg:gap-16">
             <div class="w-full flex flex-col lg:flex-row justify-between items-start gap-8">
                 <div class="flex flex-col gap-3">
-                    <span class="text-ch4 text-main1">{{ $page->siteName }}</span>
+                    <a href="/" class="inline-flex">
+                        <img src="/images/logo.svg" alt="{{ $page->siteName }}" class="h-8 w-auto">
+                    </a>
                     <p class="text-cb2 text-gray3 max-w-md">{{ $page->siteDescription }}</p>
                 </div>
 
@@ -38,17 +40,13 @@
 
                 <div class="hidden lg:block w-px self-stretch bg-gray1"></div>
 
-                <div class="flex-1 w-full max-w-[640px] grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 items-start">
+                <div class="flex-1 w-full max-w-[640px] grid grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
                     <div class="flex flex-col items-start gap-3">
-                        <a href="/about/" class="text-main1 text-cb2 hover:text-main2 transition-colors">關於我們</a>
-                        <a href="/news/" class="text-main1 text-cb2 hover:text-main2 transition-colors">最新消息</a>
-                    </div>
-                    <div class="flex flex-col items-start gap-1">
-                        <span class="text-main1 text-cb2 mb-1">服務項目</span>
-                        <a href="/services/" class="text-gray3 text-cb2 hover:text-main2 transition-colors">服務項目一</a>
-                        <a href="/services/" class="text-gray3 text-cb2 hover:text-main2 transition-colors">服務項目二</a>
+                        <a href="/about/" class="text-main1 text-cb2 hover:text-main2 transition-colors">公司簡介</a>
+                        <a href="/products/" class="text-main1 text-cb2 hover:text-main2 transition-colors">產品介紹</a>
                     </div>
                     <div class="flex flex-col items-start gap-3">
+                        <a href="/partners/" class="text-main1 text-cb2 hover:text-main2 transition-colors">合作夥伴</a>
                         <a href="/contact/" class="text-main1 text-cb2 hover:text-main2 transition-colors">聯絡我們</a>
                     </div>
                     <div class="flex flex-col items-start gap-1">
@@ -64,8 +62,4 @@
             </div>
         </div>
     </div>
-
-    <button id="back-to-top" class="fixed right-4 bottom-4 lg:right-6 lg:bottom-6 z-50 w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-main1 text-white flex items-center justify-center shadow-lg transition-all duration-300 hover:bg-main2 hover:scale-110 active:scale-95 cursor-pointer" aria-label="返回頁首">
-        <i data-lucide="chevron-up" class="w-5 h-5"></i>
-    </button>
 </footer>

@@ -21,103 +21,323 @@
     @apply inline-flex items-center gap-2 px-6 py-3 bg-main1 text-white rounded-full font-medium transition-colors hover:bg-main2 cursor-pointer;
   }
 
-  .nav-link {
-    @apply relative py-1.5 lg:py-2 text-main1 transition-colors hover:text-main2 flex items-center gap-1;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 1.9;
-    letter-spacing: 0.02em;
+  .btn-dark {
+    @apply inline-flex h-12 w-40 items-center justify-center gap-2 rounded-[50px] bg-gray5 text-white transition-colors hover:bg-main1 cursor-pointer;
   }
 
-  @screen lg {
-    .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 0%;
-      height: 2px;
-      background-color: theme('colors.main2');
-      transition: width 0.25s ease-in-out;
-    }
-
-    .group:hover .nav-link::after,
-    .nav-link:hover::after,
-    .nav-link.active::after {
-      width: 100%;
-    }
+  /* Hero：一屏高度；文案／頁碼／產品同時進場 */
+  .hero-brand {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 56%;
+    transform: translateY(-50%);
+    z-index: 0;
   }
 
-  .group:hover .nav-link,
-  .nav-link:hover,
-  .mobile-dropdown.active > .nav-link {
-    color: theme('colors.main2');
+  .hero-brand-text {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 185px;
+    text-transform: uppercase;
   }
 
-  .nav-link.active {
-    @apply text-main2;
-    font-weight: 500;
+  /* 圓形按鈕：手機 44px、桌機 52px；hover 變 gray5 深底白字 */
+  .hero-pager-btn {
+    @apply inline-flex size-11 md:size-[3.25rem] shrink-0 items-center justify-center rounded-full border-0 bg-white/60 p-0 text-gray5 transition-colors hover:bg-gray5 hover:text-white cursor-pointer;
   }
 
-  .dropdown-menu-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    width: 100%;
+  .hero-visual {
+    overflow: visible;
   }
 
-  .dropdown-menu-inner {
-    overflow: hidden;
+  .hero-swiper {
+    overflow: visible;
   }
 
-  .mobile-dropdown.active > .dropdown-menu-wrapper {
-    grid-template-rows: 1fr;
+  .hero-swiper .swiper-slide {
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
-  @screen lg {
-    .dropdown-menu-wrapper {
-      position: absolute;
-      display: block;
-      grid-template-rows: none;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%) translateY(4px);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      width: auto;
-      z-index: 50;
-      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
-    }
-
-    .group:hover > .dropdown-menu-wrapper {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transform: translateX(-50%) translateY(0);
-    }
+  .hero-swiper .swiper-slide-active,
+  .hero-swiper .swiper-slide-duplicate-active {
+    pointer-events: auto;
   }
 
-  .dropdown-item {
-    @apply relative flex justify-between items-center pl-4 pr-3 py-2.5 text-gray3 hover:text-main1 hover:bg-bg transition-colors border-b border-gray1 last:border-b-0;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 1.9;
-    letter-spacing: 0.02em;
-  }
-
-  .dropdown-item-arrow {
-    color: theme('colors.main2');
+  /* 第 1 層 motion：右進左出 + 縮放淡入淡出（只動 translate / scale / opacity，GPU 合成）
+     - 新產品：從右側（稍小 0.85）滑入並放大到原尺寸，同時淡入
+     - 舊產品：往左側滑出並縮小（0.85），同時淡出
+     想調滑動距離改 4rem；縮放幅度改 0.85（越小變化越大）；時間改 1s（要與 main.js 的 speed 一致）。 */
+  .hero-motion {
+    will-change: translate, scale, opacity;
+    translate: 16rem 0;
+    scale: 0.75;
     opacity: 0;
-    transform: translateX(-8px);
-    transition: all 0.2s ease-in-out;
+    transition:
+      translate 1s cubic-bezier(0.22, 1, 0.36, 1),
+      scale 1s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.7s ease;
   }
 
-  .dropdown-item:hover .dropdown-item-arrow {
+  .hero-swiper .swiper-slide-prev .hero-motion,
+  .hero-swiper .swiper-slide-duplicate-prev .hero-motion {
+    translate: -16rem 0;
+    scale: 0.85;
+    opacity: 0;
+  }
+
+  .hero-swiper .swiper-slide-active .hero-motion,
+  .hero-swiper .swiper-slide-duplicate-active .hero-motion {
+    translate: 0 0;
+    scale: 1;
     opacity: 1;
-    transform: translateX(2px);
+  }
+
+  /* 第 2 層 float：只負責漂浮，與 motion 分開，不會覆蓋滑入位移 */
+  .hero-float {
+    will-change: transform;
+    backface-visibility: hidden;
+  }
+
+  .hero-swiper .swiper-slide-active .hero-float,
+  .hero-swiper .swiper-slide-duplicate-active .hero-float {
+    animation: hero-float 5.5s ease-in-out 0.8s infinite;
+  }
+
+  /* 第 3 層 tilt：3D 傾斜。transform 由 JS 直接寫在元素上（不經 CSS 變數，省樣式重算） */
+  .hero-tilt {
+    transform: none;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* 動態陰影：用產品圖本身 + CSS filter 即時產生（後台換圖不需額外處理）。
+     獨立一層，filter 固定不做動畫，只動 transform / opacity。
+     - shadow-tilt：基礎偏移 33px，並由 JS 依傾斜微調
+     - shadow：與漂浮同步，產品上浮時陰影拉遠、縮小、變淡 */
+  .hero-shadow-tilt {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform: translate3d(33px, 33px, 0);
+  }
+
+  .hero-shadow {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    will-change: transform, opacity;
+  }
+
+  .hero-shadow-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: contain;
+    filter: brightness(0) blur(20px);
+  }
+
+  .hero-swiper .swiper-slide-active .hero-shadow,
+  .hero-swiper .swiper-slide-duplicate-active .hero-shadow {
+    animation: hero-shadow 5.5s ease-in-out 0.8s infinite;
+  }
+
+  /* 頁碼進度圈 */
+  .hero-ring {
+    transition: stroke-dashoffset 0.12s linear;
+  }
+
+  /* 左側文案 + 右側頁碼：與產品同節奏進場 */
+  .hero-enter {
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 0.7s ease 0.12s,
+      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
+  }
+
+  .hero-enter-delay {
+    transition-delay: 0.18s, 0.18s;
+  }
+
+  .hero.is-ready .hero-enter {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hero-copy-fade {
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .hero-copy-fade.is-leaving {
+    opacity: 0;
+    transform: translateX(-0.75rem);
+  }
+
+  @keyframes hero-float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+    50% {
+      transform: translate3d(0, -10px, 0);
+    }
+  }
+
+  /* 與 hero-float 同節奏：產品上浮 10px 時，陰影更遠、更小、更淡 */
+  @keyframes hero-shadow {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.12;
+    }
+    50% {
+      transform: translate3d(8px, 12px, 0) scale(0.95);
+      opacity: 0.07;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-motion {
+      translate: none !important;
+      scale: none !important;
+      opacity: 1 !important;
+      transition: none;
+    }
+
+    .hero-float {
+      animation: none !important;
+    }
+
+    .hero-tilt {
+      transform: none !important;
+    }
+
+    .hero-shadow-tilt {
+      transform: translate3d(33px, 33px, 0) !important;
+    }
+
+    .hero-shadow {
+      animation: none !important;
+    }
+
+    .hero-ring {
+      transition: none;
+    }
+
+    .hero-enter,
+    .hero-enter-delay {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .hero-copy-fade,
+    .hero-copy-fade.is-leaving {
+      transition: none;
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  /* Nav：TLC 式滑動深色 pill（gray5 + 白字） */
+  .nav-track-list {
+    isolation: isolate;
+  }
+
+  .nav-tracker {
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 0;
+    height: 2.5rem; /* h-10，對齊選單列高 */
+    width: 0;
+    border-radius: 9999px;
+    background-color: theme('colors.main2 / 40%');
+    opacity: 0;
+    transform: translateY(-50%);
+    transition:
+      left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-track-list.is-tracking .nav-tracker {
+    opacity: 1;
+  }
+
+  .nav-item {
+    position: relative;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+
+  .nav-item.active:not(.is-over) {
+    color: theme('colors.main1');
+  }
+
+  .nav-item-mobile.active {
+    @apply bg-bg text-main1;
+  }
+
+  /* 語系下拉：相對按鈕水平置中；出現時上滑淡入 */
+  .lang-menu {
+    display: flex;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(0.625rem);
+    transition:
+      opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.28s;
+  }
+
+  .lang-menu.is-open {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .lang-chevron {
+    transition: transform 0.2s ease;
+  }
+
+  #lang-btn[aria-expanded='true'] .lang-chevron {
+    transform: rotate(180deg);
+  }
+
+  /* 語系項目滑過：底色淡入淡出 */
+  .lang-option {
+    transition: color 0.25s ease;
+  }
+
+  .lang-option::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.9);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .lang-option:hover,
+  .lang-option.is-active {
+    color: theme('colors.main1');
+  }
+
+  .lang-option:hover::before,
+  .lang-option.is-active::before {
+    opacity: 1;
   }
 }
 
