@@ -158,25 +158,28 @@
             <div class="swiper-wrapper">
                 @foreach ($productCards as $card)
                     <div class="swiper-slide h-auto">
-                        <article class="product-card h-full">
+                        <a
+                            href="{{ $card['link'] ?? '/products/' }}"
+                            class="product-card h-full"
+                            aria-label="查看{{ $card['title'] }}"
+                        >
                             <div class="relative w-full pl-6 md:pl-8 pr-5 md:pr-6 pt-16 md:pt-20 lg:pt-24">
                                 <div class="w-full pb-6 md:pb-8 border-b border-gray1 flex flex-col items-start gap-1 pr-12">
                                     <p class="text-cb3 text-gray3">{{ $card['category'] }}</p>
                                     <h2 class="text-cb1 text-gray5">{{ $card['title'] }}</h2>
                                     <p class="text-cb3 text-gray3 line-clamp-2">{{ $card['body'] }}</p>
                                 </div>
-                                <a
-                                    href="{{ $card['link'] ?? '/products/' }}"
+                                <span
                                     class="btn-icon-solid absolute right-5 md:right-6 bottom-0 translate-y-1/2"
-                                    aria-label="查看{{ $card['title'] }}"
+                                    aria-hidden="true"
                                 >
-                                    <i data-lucide="plus" aria-hidden="true"></i>
-                                </a>
+                                    <i data-lucide="plus"></i>
+                                </span>
                             </div>
                             <div class="product-card-media h-56 md:h-64 lg:h-72">
                                 <img
                                     src="{{ $card['image'] }}"
-                                    alt="{{ $card['title'] }}"
+                                    alt=""
                                     class="w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 object-contain"
                                     width="288"
                                     height="288"
@@ -184,7 +187,7 @@
                                     decoding="async"
                                 >
                             </div>
-                        </article>
+                        </a>
                     </div>
                 @endforeach
             </div>

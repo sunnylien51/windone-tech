@@ -137,11 +137,17 @@
         z-index: 1;
     }
 
-    /* 產品卡：膠囊形白半透明底；滑過時 plus 鈕下方光暈擴大 */
+    /* 產品卡：整卡可點；滑過時上移 30px、光暈擴大 */
     .product-card {
-        @apply flex flex-col items-center overflow-hidden bg-white/80;
+        @apply flex flex-col items-center overflow-hidden bg-white/80 text-inherit no-underline;
         border-radius: 900px;
         box-shadow: 10px 20px 50px 0 rgba(0, 0, 0, 0.03);
+        transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .product-card:hover {
+        transform: translateY(-30px);
     }
 
     .product-card:hover .btn-icon-solid::before {
@@ -153,7 +159,7 @@
         min-height: 14rem;
     }
 
-    /* 產品圖為方圖＋實底，勿加 box-shadow（會在右側出現一塊怪陰影）；光影吃圖檔本身 */
+    /* 產品圖為方圖＋實底，勿加 box-shadow；光影吃圖檔本身 */
 
     .product-swiper {
         overflow: visible;
@@ -540,6 +546,18 @@
             transition: none;
             transform: none;
             opacity: 1;
+        }
+
+        .product-card,
+        .product-card:hover {
+            transition: none;
+            transform: none;
+        }
+
+        .btn-icon-solid::before,
+        .product-card:hover .btn-icon-solid::before {
+            transition: none;
+            transform: translate(-50%, -50%) scale(1);
         }
     }
 
