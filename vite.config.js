@@ -118,7 +118,7 @@ function jigsawDev() {
             const shouldRebuild = (file) => {
                 const relative = path.relative(root, file).split(path.sep).join('/');
 
-                if (['config.php', 'config.local.php', 'bootstrap.php'].includes(relative)) {
+                if (['config.php', 'bootstrap.php'].includes(relative)) {
                     return true;
                 }
 

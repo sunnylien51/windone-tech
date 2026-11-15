@@ -1,0 +1,63 @@
+---
+description: 按鈕歸類流程：做頁面／切版時只要出現按鈕，必須先歸類到既有整站 btn-* 系列，不可另寫區塊專用按鈕樣式
+alwaysApply: true
+---
+
+# 按鈕歸類流程（整站 btn-* 是唯一來源）
+
+按鈕樣式的唯一來源是 `source/_assets/css/main.css` 的 **BUTTONS** 區塊。
+**以該檔實際內容為準**；下表只是對照速查，兩者不一致時以 main.css 為準，並順手更新下表。
+
+## 硬規則：整站命名，禁止區塊專用
+
+- 所有 `btn-*` 都是**整站共用**，不綁單一 section／頁面。
+- **禁止** `.hero-btn`、`.product-card-btn`、`.cta-button`、`.footer-btn` 等單一區塊命名。
+- 子元素 class 也掛在按鈕系列下（如 `.btn-dark-icon`），不要寫成 `.hero-link-icon`。
+
+## 本站現有 btn 系列
+
+| class | 外觀 | 典型用途 |
+| ----- | ---- | -------- |
+| `btn-primary` | 實心 main1，hover main2 | 淺底主要 CTA |
+| `btn-dark` | 固定 w-40 h-12、gray5 底；hover → gray3，箭頭滑入 | 深色實心 CTA（如 Read more） |
+| `btn-icon-solid` | 40px 圓、main2 底；::before 為 main2/30% 光暈（卡片 hover 擴大） | 產品卡詳情、圓形實心 icon |
+
+母版另有 `btn-accent`／`btn-outline`／`btn-outline-light`／`btn-icon`／`btn-sm`／`btn-lg`，**本站尚未定義**。缺變體一律先問，不要從母版私自搬進來。（母版 `btn-icon-solid` 為 main1；本站依稿用 main2。）
+
+不屬於按鈕系列（保持現狀）：`nav-link`、語系選單、一般文字連結、漢堡選單 `#mobile-menu-btn`、`footer-link`。
+
+## 何時觸發
+
+只要這次要新增或修改的程式碼裡出現下列任一種，就要走歸類流程：
+
+- `<button>`、`<input type="submit|button">`
+- 長得像按鈕的 `<a>`（有底色／邊框／圓角＋padding 的 CTA、「了解更多」、「立即諮詢」、Read more）
+- 使用者貼上的 Figma／HTML／Tailwind 稿中的按鈕區塊
+- 圓形／方形的 icon 按鈕
+
+## 流程（依序執行，不可跳過）
+
+1. **盤點**：列出這次所有按鈕，標出位置與外觀（底色、邊框、圓角、是否在深色底）。
+2. **對照** 上表，每顆分成三類：
+   - **明確對得上**：直接套用，不用問。
+   - **有 2 個以上可能**：詢問，選項列出候選 class。
+   - **都不像**：詢問「改用現有 `btn-*`」或「新增整站變體」。
+3. **使用者確認新增變體後**，才可以改 main.css：
+   - 只能加在 BUTTONS 區塊，命名 `btn-*`（整站）；
+   - 同步更新本檔上方表格；
+   - 若是通用變體，提醒是否回灌 mother。
+4. 完成後附「按鈕歸類」表：
+
+   | 位置 | 原稿外觀 | 套用 class | 狀態（直接對應／已詢問／新增） |
+
+## 禁止
+
+- 為單一區塊另寫按鈕 class。
+- 在 Blade 裡用一長串 Tailwind 手刻按鈕。
+- 直接沿用稿上的陌生按鈕色、固定寬高、陌生字體（`bg-gray-500` → `bg-gray5`；`font-['Outfit']` → `text-eb*`）。
+- 未經詢問就新增 btn 變體。
+
+## 允許寫在按鈕元素上的 utility
+
+只限版面／位置類：`w-full`、`lg:w-auto`、`mt-*`、`shrink-0`、`fixed`／`absolute` 定位、`data-aos`、`id`。
+**顏色、邊框、圓角、hover、padding、箭頭動畫不可用 utility 覆寫。**

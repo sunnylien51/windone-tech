@@ -1,11 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
-        './source/**/*.blade.php',
-        './source/**/*.js',
         './source/**/*.php',
-        './source/**/*.html',
-        './source/**/*.md',
+        './source/_assets/**/*.js',
         './config.php',
     ],
     // 字級／色票 token 一律保留，供 md:/lg: 與尚未用到的 class
@@ -18,7 +15,7 @@ export default {
             pattern: /^(bg|text|border|outline|ring|fill|stroke)-(main[12]|gray[1235]|bg|white)(\/\d+)?$/,
             variants: ['hover', 'focus', 'active', 'md', 'lg'],
         },
-        'bg-dot',
+        'bg-dot', // 定義在 main.css（白底 + 點狀圖），尚未使用但保留
     ],
     theme: {
         screens: {
@@ -34,16 +31,11 @@ export default {
                 gray2: '#BDC1CF',
                 gray1: '#E1E3E7',
                 bg: '#F0F2F8',
-                white: '#FFFFFF',
             },
             fontFamily: {
                 sans: ['Noto Sans TC', 'sans-serif'],
                 outfit: ['Outfit', 'sans-serif'],
                 display: ['Tenor Sans', 'sans-serif'],
-            },
-            backgroundImage: {
-                // bg_dot：白底 + 點狀圖
-                dot: "url('/images/bg-dot.svg')",
             },
         },
     },

@@ -1,10 +1,5 @@
 @php
-    $navItems = [
-        ['label' => '公司簡介', 'path' => '/about'],
-        ['label' => '產品介紹', 'path' => '/products'],
-        ['label' => '合作夥伴', 'path' => '/partners'],
-        ['label' => '聯絡我們', 'path' => '/contact'],
-    ];
+    $navItems = $page->navItems;
     $langs = [
         ['code' => 'zh-Hant', 'label' => '繁體中文'],
         ['code' => 'en', 'label' => 'English'],
@@ -21,16 +16,16 @@
         </a>
 
         {{-- Desktop pill cluster --}}
-        <div class="nav-pill hidden lg:flex items-center gap-3 p-2 bg-white/70 rounded-[50px] outline outline-1 outline-offset-[-1px] outline-gray1/80 backdrop-blur-lg">
+        <div class="nav-pill hidden lg:flex items-center gap-3 p-2 bg-white/70 rounded-full outline-inset outline-gray1/80 backdrop-blur-lg">
             <a
                 href="/"
-                class="nav-home-btn size-10 shrink-0 bg-white/70 rounded-[20px] outline outline-1 outline-offset-[-1px] outline-gray2 flex justify-center items-center text-gray5 transition-colors hover:bg-white"
+                class="nav-home-btn size-10 shrink-0 bg-white/70 rounded-full outline-inset outline-gray2 flex justify-center items-center text-gray5 transition-colors hover:bg-white"
                 aria-label="回首頁"
             >
                 <i data-lucide="home" class="w-4 h-4"></i>
             </a>
 
-            {{-- TLC 式滑動深色 pill hover：tracker 跟滑鼠移動 --}}
+            {{-- TLC 式滑動 pill hover：tracker 跟滑鼠移動 --}}
             <ul id="nav-track-list" class="nav-track-list relative flex items-center gap-0.5">
                 <span class="nav-tracker" aria-hidden="true"></span>
                 @foreach ($navItems as $item)
@@ -47,7 +42,7 @@
                 <button
                     type="button"
                     id="lang-btn"
-                    class="nav-lang h-10 w-[130px] pl-2 pr-3 py-2 bg-white/70 rounded-[20px] outline outline-1 outline-offset-[-0.5px] outline-gray2 inline-flex items-center justify-start gap-2 text-gray5 cursor-pointer transition-colors hover:bg-white"
+                    class="nav-lang h-10 w-[130px] pl-2 pr-3 py-2 bg-white/70 rounded-full outline-inset outline-gray2 inline-flex items-center justify-start gap-2 text-gray5 cursor-pointer transition-colors hover:bg-white"
                     aria-expanded="false"
                     aria-haspopup="listbox"
                     aria-controls="lang-menu"
@@ -58,7 +53,7 @@
                 </button>
                 <ul
                     id="lang-menu"
-                    class="lang-menu absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-full flex-col gap-1 overflow-hidden rounded-[20px] outline outline-1 outline-offset-[-1px] outline-gray1/80 bg-white/80 backdrop-blur-lg p-1.5 shadow-[0_8px_24px_rgba(14,26,43,0.08)]"
+                    class="lang-menu absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-full flex-col gap-1 overflow-hidden rounded-[20px] outline-inset outline-gray1/80 bg-white/80 backdrop-blur-lg p-1.5 shadow-[0_8px_24px_theme(colors.gray5/8%)]"
                     role="listbox"
                     aria-label="語言"
                 >
@@ -82,7 +77,7 @@
         <button
             type="button"
             id="mobile-menu-btn"
-            class="lg:hidden relative z-50 size-10 flex items-center justify-center rounded-[20px] bg-white/70 outline outline-1 outline-offset-[-1px] outline-gray1/80 backdrop-blur-lg text-gray5 cursor-pointer"
+            class="lg:hidden relative z-50 size-10 flex items-center justify-center rounded-full bg-white/70 outline-inset outline-gray1/80 backdrop-blur-lg text-gray5 cursor-pointer"
             aria-label="開啟選單"
             aria-expanded="false"
             aria-controls="nav-menu"
@@ -93,7 +88,7 @@
         {{-- Mobile panel --}}
         <div
             id="nav-menu"
-            class="fixed lg:hidden top-0 right-0 max-w-full w-full sm:w-[320px] h-screen max-h-[100dvh] bg-white shadow-2xl p-6 pt-24 pb-12 flex flex-col gap-6 translate-x-full transition-transform duration-300 ease-in-out z-40 overflow-y-auto"
+            class="fixed lg:hidden top-0 right-0 max-w-full w-full md:w-[320px] h-screen max-h-[100dvh] bg-white shadow-2xl p-6 pt-24 pb-12 flex flex-col gap-6 translate-x-full transition-transform duration-300 ease-in-out z-40 overflow-y-auto"
         >
             <ul class="flex flex-col gap-1 w-full">
                 @foreach ($navItems as $item)
@@ -109,16 +104,18 @@
             <div class="flex items-center gap-2 pt-2 border-t border-gray1">
                 <a
                     href="/"
-                    class="nav-home-btn size-10 shrink-0 rounded-[20px] border border-gray2 flex justify-center items-center text-gray5"
+                    class="nav-home-btn size-10 shrink-0 rounded-full outline-inset outline-gray2 flex justify-center items-center text-gray5"
                     aria-label="回首頁"
                 >
                     <i data-lucide="home" class="w-4 h-4"></i>
                 </a>
-                <div class="flex flex-col gap-1 ml-auto w-full max-w-[11rem]">
+                <div class="flex flex-col gap-1 ml-auto w-full max-w-[11rem]" role="listbox" aria-label="語言">
                     @foreach ($langs as $lang)
                         <button
                             type="button"
-                            class="lang-option text-eb3 rounded-[12px] px-3 py-2 text-gray5 cursor-pointer text-left whitespace-nowrap {{ $lang['code'] === $currentLang['code'] ? 'is-active' : '' }}"
+                            class="lang-option text-eb3 relative z-0 rounded-[12px] px-3 py-2 text-gray5 cursor-pointer text-left whitespace-nowrap {{ $lang['code'] === $currentLang['code'] ? 'is-active' : '' }}"
+                            role="option"
+                            aria-selected="{{ $lang['code'] === $currentLang['code'] ? 'true' : 'false' }}"
                             data-lang="{{ $lang['code'] }}"
                             data-label="{{ $lang['label'] }}"
                         >{{ $lang['label'] }}</button>
@@ -127,6 +124,6 @@
             </div>
         </div>
 
-        <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/40 hidden z-30 lg:hidden"></div>
+        <div id="mobile-menu-overlay" class="fixed inset-0 bg-gray5/40 hidden z-30 lg:hidden"></div>
     </nav>
 </header>

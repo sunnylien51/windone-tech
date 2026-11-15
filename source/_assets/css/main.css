@@ -3,481 +3,778 @@
 @import 'tailwindcss/utilities';
 
 :root {
-  --font-sans: 'Noto Sans TC', sans-serif;
-  --font-outfit: 'Outfit', sans-serif;
-  --font-display: 'Tenor Sans', sans-serif;
-}
-
-@layer base {
-  .resize-animation-stopper,
-  .resize-animation-stopper * {
-    transition: none !important;
-    animation: none !important;
-  }
+    --font-sans: 'Noto Sans TC', sans-serif;
+    --font-outfit: 'Outfit', sans-serif;
+    --font-display: 'Tenor Sans', sans-serif;
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center gap-2 px-6 py-3 bg-main1 text-white rounded-full font-medium transition-colors hover:bg-main2 cursor-pointer;
-  }
-
-  .btn-dark {
-    @apply inline-flex h-12 w-40 items-center justify-center gap-2 rounded-[50px] bg-gray5 text-white transition-colors hover:bg-main1 cursor-pointer;
-  }
-
-  /* Hero：一屏高度；文案／頁碼／產品同時進場 */
-  .hero-brand {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 56%;
-    transform: translateY(-50%);
-    z-index: 0;
-  }
-
-  .hero-brand-text {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 185px;
-    text-transform: uppercase;
-  }
-
-  /* 圓形按鈕：手機 44px、桌機 52px；hover 變 gray5 深底白字 */
-  .hero-pager-btn {
-    @apply inline-flex size-11 md:size-[3.25rem] shrink-0 items-center justify-center rounded-full border-0 bg-white/60 p-0 text-gray5 transition-colors hover:bg-gray5 hover:text-white cursor-pointer;
-  }
-
-  .hero-visual {
-    overflow: visible;
-  }
-
-  .hero-swiper {
-    overflow: visible;
-  }
-
-  .hero-swiper .swiper-slide {
-    pointer-events: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hero-swiper .swiper-slide-active,
-  .hero-swiper .swiper-slide-duplicate-active {
-    pointer-events: auto;
-  }
-
-  /* 第 1 層 motion：右進左出 + 縮放淡入淡出（只動 translate / scale / opacity，GPU 合成）
-     - 新產品：從右側（稍小 0.85）滑入並放大到原尺寸，同時淡入
-     - 舊產品：往左側滑出並縮小（0.85），同時淡出
-     想調滑動距離改 4rem；縮放幅度改 0.85（越小變化越大）；時間改 1s（要與 main.js 的 speed 一致）。 */
-  .hero-motion {
-    will-change: translate, scale, opacity;
-    translate: 16rem 0;
-    scale: 0.75;
-    opacity: 0;
-    transition:
-      translate 1s cubic-bezier(0.22, 1, 0.36, 1),
-      scale 1s cubic-bezier(0.22, 1, 0.36, 1),
-      opacity 0.7s ease;
-  }
-
-  .hero-swiper .swiper-slide-prev .hero-motion,
-  .hero-swiper .swiper-slide-duplicate-prev .hero-motion {
-    translate: -16rem 0;
-    scale: 0.85;
-    opacity: 0;
-  }
-
-  .hero-swiper .swiper-slide-active .hero-motion,
-  .hero-swiper .swiper-slide-duplicate-active .hero-motion {
-    translate: 0 0;
-    scale: 1;
-    opacity: 1;
-  }
-
-  /* 第 2 層 float：只負責漂浮，與 motion 分開，不會覆蓋滑入位移 */
-  .hero-float {
-    will-change: transform;
-    backface-visibility: hidden;
-  }
-
-  .hero-swiper .swiper-slide-active .hero-float,
-  .hero-swiper .swiper-slide-duplicate-active .hero-float {
-    animation: hero-float 5.5s ease-in-out 0.8s infinite;
-  }
-
-  /* 第 3 層 tilt：3D 傾斜。transform 由 JS 直接寫在元素上（不經 CSS 變數，省樣式重算） */
-  .hero-tilt {
-    transform: none;
-    transform-style: preserve-3d;
-    will-change: transform;
-  }
-
-  /* 動態陰影：用產品圖本身 + CSS filter 即時產生（後台換圖不需額外處理）。
-     獨立一層，filter 固定不做動畫，只動 transform / opacity。
-     - shadow-tilt：基礎偏移 33px，並由 JS 依傾斜微調
-     - shadow：與漂浮同步，產品上浮時陰影拉遠、縮小、變淡 */
-  .hero-shadow-tilt {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    transform: translate3d(33px, 33px, 0);
-  }
-
-  .hero-shadow {
-    position: absolute;
-    inset: 0;
-    opacity: 0.12;
-    will-change: transform, opacity;
-  }
-
-  .hero-shadow-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    object-fit: contain;
-    filter: brightness(0) blur(20px);
-  }
-
-  .hero-swiper .swiper-slide-active .hero-shadow,
-  .hero-swiper .swiper-slide-duplicate-active .hero-shadow {
-    animation: hero-shadow 5.5s ease-in-out 0.8s infinite;
-  }
-
-  /* 頁碼進度圈 */
-  .hero-ring {
-    transition: stroke-dashoffset 0.12s linear;
-  }
-
-  /* 左側文案 + 右側頁碼：與產品同節奏進場 */
-  .hero-enter {
-    opacity: 0;
-    transform: translateY(1rem);
-    transition:
-      opacity 0.7s ease 0.12s,
-      transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
-  }
-
-  .hero-enter-delay {
-    transition-delay: 0.18s, 0.18s;
-  }
-
-  .hero.is-ready .hero-enter {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .hero-copy-fade {
-    transition: opacity 0.35s ease, transform 0.35s ease;
-  }
-
-  .hero-copy-fade.is-leaving {
-    opacity: 0;
-    transform: translateX(-0.75rem);
-  }
-
-  @keyframes hero-float {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0);
+    /* ================= BUTTONS（整站共用，唯一來源）=================
+       規則見 .cursor/rules/buttons.mdc；禁止 .hero-btn 等區塊專用命名
+       btn-primary      實心主色
+       btn-dark         固定 w-40 h-12 深色；hover 變 gray3，箭頭滑入
+       btn-icon-solid   圓形實心 icon（40px、main2）；::before main2/30%，卡片 hover 擴大
+    */
+    .btn-primary {
+        @apply inline-flex items-center gap-2 px-6 py-3 bg-main1 text-white rounded-full font-medium transition-colors hover:bg-main2 cursor-pointer;
     }
-    50% {
-      transform: translate3d(0, -10px, 0);
-    }
-  }
 
-  /* 與 hero-float 同節奏：產品上浮 10px 時，陰影更遠、更小、更淡 */
-  @keyframes hero-shadow {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-      opacity: 0.12;
+    .btn-dark {
+        @apply inline-flex h-12 w-40 items-center justify-center rounded-full bg-gray5 text-white cursor-pointer;
+        gap: 0;
+        transition:
+            background-color 0.3s ease,
+            gap 0.3s ease;
     }
-    50% {
-      transform: translate3d(8px, 12px, 0) scale(0.95);
-      opacity: 0.07;
-    }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
+    .btn-dark .btn-dark-icon {
+        width: 0;
+        height: 1.25rem; /* size-5 */
+        opacity: 0;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            width 0.3s ease,
+            opacity 0.3s ease;
+    }
+
+    .btn-dark .btn-dark-icon [data-lucide] {
+        width: 1rem;
+        height: 1rem;
+        stroke-width: 1.2;
+    }
+
+    .btn-dark:hover {
+        @apply bg-gray3;
+        gap: 0.5rem;
+    }
+
+    .btn-dark:hover .btn-dark-icon {
+        width: 1.25rem;
+        opacity: 1;
+    }
+
+    .btn-dark:focus-visible {
+        outline: 2px solid theme('colors.main2');
+        outline-offset: 2px;
+    }
+
+    .btn-icon-solid {
+        @apply relative z-0 inline-flex items-center justify-center w-10 h-10 rounded-full bg-main2 text-white cursor-pointer outline-inset outline-main2;
+        transition:
+            background-color 0.3s ease,
+            outline-color 0.3s ease;
+    }
+
+    /* 半透明光暈；卡片 hover 時擴大（見 .product-card:hover） */
+    .btn-icon-solid::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 2.5rem; /* 與按鈕同徑，擴大時才露邊 */
+        height: 2.5rem;
+        border-radius: 9999px;
+        background-color: theme('colors.main2 / 30%');
+        transform: translate(-50%, -50%) scale(1);
+        z-index: -1;
+        pointer-events: none;
+        transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-icon-solid [data-lucide] {
+        width: 1.25rem;
+        height: 1.25rem;
+        stroke-width: 2;
+    }
+
+    .btn-icon-solid:hover {
+        @apply bg-main1 outline-main1;
+    }
+
+    .btn-icon-solid:focus-visible {
+        outline: 2px solid theme('colors.main1');
+        outline-offset: 2px;
+    }
+
+    /* 內縮 1px 外框（不佔版面）；顏色另用 outline-{色票} 指定 */
+    .outline-inset {
+        @apply outline outline-1 outline-offset-[-1px];
+    }
+
+    .footer-link {
+        @apply text-main1 text-cb2 transition-colors hover:text-main2;
+    }
+
+    /* 首頁頂區：hero + 產品 slider 共用 bg_main；下方圓角 40px
+       不可對「整段變高的容器」直接 background-size:cover，否則底圖會被放大裁成一片淡色。
+       改用 ::before + 100% auto，視覺縮放對齊原本單屏 hero。 */
+    .home-top {
+        position: relative;
+        background-color: #e8eef5;
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
+        overflow: hidden;
+    }
+
+    .home-top::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: url('/images/bg_main.webp');
+        background-repeat: no-repeat;
+        background-position: center top;
+        background-size: 100% auto;
+    }
+
+    .home-top > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 產品卡：膠囊形白半透明底；滑過時 plus 鈕下方光暈擴大 */
+    .product-card {
+        @apply flex flex-col items-center overflow-hidden bg-white/80;
+        border-radius: 900px;
+        box-shadow: 10px 20px 50px 0 rgba(0, 0, 0, 0.03);
+    }
+
+    .product-card:hover .btn-icon-solid::before {
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+
+    .product-card-media {
+        @apply flex w-full flex-1 items-end justify-center overflow-hidden;
+        min-height: 14rem;
+    }
+
+    /* 產品圖為方圖＋實底，勿加 box-shadow（會在右側出現一塊怪陰影）；光影吃圖檔本身 */
+
+    .product-swiper {
+        overflow: visible;
+    }
+
+    .product-swiper .swiper-slide {
+        height: auto;
+    }
+
+    /* Hero：一屏高度；文案／頁碼／產品同時進場 */
+
+    .hero-brand {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 56%;
+        transform: translateY(-50%);
+        z-index: 0;
+    }
+
+    /* 品牌字白色漸層：白 100% → 15% */
+    .hero-brand-stop-start {
+        stop-color: theme('colors.white');
+        stop-opacity: 1;
+    }
+
+    .hero-brand-stop-end {
+        stop-color: theme('colors.white');
+        stop-opacity: 0.15;
+    }
+
+    .hero-brand-text {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 185px;
+        text-transform: uppercase;
+    }
+
+    /* 整站頁碼：左側 01 / 03、右側節點（hero／產品共用） */
+    .pager {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem; /* 20px */
+    }
+
+    .pager-label {
+        font-family: var(--font-outfit);
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.4;
+        letter-spacing: 0.02em;
+        color: theme('colors.gray5');
+    }
+
+    .pager-dots {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; /* 8px */
+    }
+
+    .pager-dot {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 6px;
+        cursor: pointer;
+    }
+
+    /* 點擊範圍至少 40×40，不撐開頁點 8px 間距 */
+    .pager-dot::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 40px;
+        height: 40px;
+        transform: translate(-50%, -50%);
+    }
+
+    .pager-dot-pill {
+        display: block;
+        width: 6px;
+        height: 6px;
+        border-radius: 3px;
+        background-color: theme('colors.gray5 / 25%');
+        transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+    }
+
+    .pager-dot.is-active .pager-dot-pill {
+        width: 28px;
+        background-color: theme('colors.gray5');
+    }
+
+    /* Hero：右下角定位（右 80px、底 64px，與 Read more 底邊對齊） */
+    .hero-pager {
+        position: absolute;
+        right: 5rem;
+        bottom: 4rem;
+        z-index: 20;
+    }
+
+    /* 產品區：同組件，頁碼＋節點一組靠左 */
+    .product-pager {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* 桌機自訂游標：90px 玻璃圓 + 進度環；僅 pointer: fine 顯示
+       glass 必須掛在「有 transform、會移動」的同一層；父層 opacity 會讓 backdrop-filter 失效 */
+    .hero-cursor {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 80;
+        width: 90px;
+        height: 90px;
+        border-radius: 9999px;
+        pointer-events: none;
+        visibility: hidden;
+        /* 對齊 nav pill 的玻璃語彙：半透白 + blur + 描邊高光 */
+        background-color: theme('colors.white / 35%');
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        backdrop-filter: blur(16px) saturate(160%);
+        outline: 1px solid theme('colors.white / 80%');
+        outline-offset: -1px;
+        box-shadow:
+            inset 0 1px 0 theme('colors.white / 70%'),
+            0 10px 28px theme('colors.gray5 / 5%');
+        transform: translate3d(-100px, -100px, 0);
+        will-change: transform;
+    }
+
+    .hero-cursor.is-visible {
+        visibility: visible;
+    }
+
+    .hero-cursor-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg); /* 12 點鐘起點，順時針 */
+    }
+
+    .hero-cursor-track {
+        fill: none;
+        stroke: theme('colors.main2');
+        stroke-opacity: 0.2;
+        stroke-width: 1.35;
+    }
+
+    .hero-cursor-progress {
+        fill: none;
+        stroke: theme('colors.main2');
+        stroke-width: 2.25;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .hero-cursor-icon {
+        position: absolute;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: theme('colors.gray5');
+    }
+
+    .hero-cursor-icon svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 2;
+    }
+
+    .hero-cursor[data-dir='next'] .hero-cursor-icon-next,
+    .hero-cursor[data-dir='prev'] .hero-cursor-icon-prev {
+        display: flex;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .hero-cursor {
+            display: block;
+        }
+
+        .hero.is-cursor-on {
+            cursor: none;
+        }
+    }
+
+    .hero-swiper {
+        overflow: visible;
+    }
+
+    .hero-swiper .swiper-slide {
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-swiper .swiper-slide-active,
+    .hero-swiper .swiper-slide-duplicate-active {
+        pointer-events: auto;
+    }
+
+    /* 第 1 層 motion：右進左出 + 縮放淡入淡出（只動 translate / scale / opacity，GPU 合成）
+       - 新產品：從右側（稍小 0.85）滑入並放大到原尺寸，同時淡入
+       - 舊產品：往左側滑出並縮小（0.85），同時淡出
+       想調滑動距離改 16rem；縮放幅度改 0.75／0.85（越小變化越大）；時間改 1s（要與 main.js 的 speed 一致）。 */
     .hero-motion {
-      translate: none !important;
-      scale: none !important;
-      opacity: 1 !important;
-      transition: none;
+        will-change: translate, scale, opacity;
+        translate: 16rem 0;
+        scale: 0.75;
+        opacity: 0;
+        transition:
+            translate 1s cubic-bezier(0.22, 1, 0.36, 1),
+            scale 1s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.7s ease;
     }
 
+    .hero-swiper .swiper-slide-prev .hero-motion,
+    .hero-swiper .swiper-slide-duplicate-prev .hero-motion {
+        translate: -16rem 0;
+        scale: 0.85;
+        opacity: 0;
+    }
+
+    .hero-swiper .swiper-slide-active .hero-motion,
+    .hero-swiper .swiper-slide-duplicate-active .hero-motion {
+        translate: 0 0;
+        scale: 1;
+        opacity: 1;
+    }
+
+    /* 第 2 層 float：只負責漂浮，與 motion 分開，不會覆蓋滑入位移 */
     .hero-float {
-      animation: none !important;
+        will-change: transform;
+        backface-visibility: hidden;
     }
 
+    .hero-swiper .swiper-slide-active .hero-float,
+    .hero-swiper .swiper-slide-duplicate-active .hero-float {
+        animation: hero-float 5.5s ease-in-out 0.8s infinite;
+    }
+
+    /* 第 3 層 tilt：3D 傾斜。transform 由 JS 直接寫在元素上（不經 CSS 變數，省樣式重算） */
     .hero-tilt {
-      transform: none !important;
+        transform: none;
+        transform-style: preserve-3d;
+        will-change: transform;
     }
 
+    /* 動態陰影：用產品圖本身 + CSS filter 即時產生（後台換圖不需額外處理）。
+       獨立一層，filter 固定不做動畫，只動 transform / opacity。
+       - shadow-tilt：基礎偏移 33px，並由 JS 依傾斜微調
+       - shadow：與漂浮同步，產品上浮時陰影拉遠、縮小、變淡 */
     .hero-shadow-tilt {
-      transform: translate3d(33px, 33px, 0) !important;
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transform: translate3d(33px, 33px, 0);
     }
 
     .hero-shadow {
-      animation: none !important;
+        position: absolute;
+        inset: 0;
+        opacity: 0.12;
+        will-change: transform, opacity;
     }
 
-    .hero-ring {
-      transition: none;
+    .hero-shadow-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: contain;
+        filter: brightness(0) blur(20px);
     }
 
-    .hero-enter,
+    .hero-swiper .swiper-slide-active .hero-shadow,
+    .hero-swiper .swiper-slide-duplicate-active .hero-shadow {
+        animation: hero-shadow 5.5s ease-in-out 0.8s infinite;
+    }
+
+    /* 左側文案 + 右下頁數：與產品同節奏進場 */
+    .hero-enter {
+        opacity: 0;
+        transform: translateY(1rem);
+        transition:
+            opacity 0.7s ease 0.12s,
+            transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
+    }
+
     .hero-enter-delay {
-      opacity: 1;
-      transform: none;
-      transition: none;
+        transition-delay: 0.18s, 0.18s;
     }
 
-    .hero-copy-fade,
+    .hero.is-ready .hero-enter {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .hero:focus {
+        outline: none;
+    }
+
+    .hero:focus-visible {
+        outline: 2px solid theme('colors.main1');
+        outline-offset: -2px;
+    }
+
+    .hero-copy-fade {
+        transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
     .hero-copy-fade.is-leaving {
-      transition: none;
-      transform: none;
-      opacity: 1;
+        opacity: 0;
+        transform: translateX(-0.75rem);
     }
-  }
 
-  /* Nav：TLC 式滑動深色 pill（gray5 + 白字） */
-  .nav-track-list {
-    isolation: isolate;
-  }
+    @keyframes hero-float {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+        50% {
+            transform: translate3d(0, -10px, 0);
+        }
+    }
 
-  .nav-tracker {
-    pointer-events: none;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    z-index: 0;
-    height: 2.5rem; /* h-10，對齊選單列高 */
-    width: 0;
-    border-radius: 9999px;
-    background-color: theme('colors.main2 / 40%');
-    opacity: 0;
-    transform: translateY(-50%);
-    transition:
-      left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+    /* 與 hero-float 同節奏：產品上浮 10px 時，陰影更遠、更小、更淡 */
+    @keyframes hero-shadow {
+        0%,
+        100% {
+            transform: translate3d(0, 0, 0) scale(1);
+            opacity: 0.12;
+        }
+        50% {
+            transform: translate3d(8px, 12px, 0) scale(0.95);
+            opacity: 0.07;
+        }
+    }
 
-  .nav-track-list.is-tracking .nav-tracker {
-    opacity: 1;
-  }
+    @media (prefers-reduced-motion: reduce) {
+        .hero-motion {
+            translate: none !important;
+            scale: none !important;
+            opacity: 1 !important;
+            transition: none;
+        }
 
-  .nav-item {
-    position: relative;
-    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
+        .hero-float {
+            animation: none !important;
+        }
 
+        .hero-tilt {
+            transform: none !important;
+        }
 
-  .nav-item.active:not(.is-over) {
-    color: theme('colors.main1');
-  }
+        .hero-shadow-tilt {
+            transform: translate3d(33px, 33px, 0) !important;
+        }
 
-  .nav-item-mobile.active {
-    @apply bg-bg text-main1;
-  }
+        .hero-shadow {
+            animation: none !important;
+        }
 
-  /* 語系下拉：相對按鈕水平置中；出現時上滑淡入 */
-  .lang-menu {
-    display: flex;
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-50%) translateY(0.625rem);
-    transition:
-      opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-      visibility 0.28s;
-  }
+        .pager-dot-pill {
+            transition: none;
+        }
 
-  .lang-menu.is-open {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
+        .hero-enter,
+        .hero-enter-delay {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
 
-  .lang-chevron {
-    transition: transform 0.2s ease;
-  }
+        .hero-copy-fade,
+        .hero-copy-fade.is-leaving {
+            transition: none;
+            transform: none;
+            opacity: 1;
+        }
+    }
 
-  #lang-btn[aria-expanded='true'] .lang-chevron {
-    transform: rotate(180deg);
-  }
+    /* Nav：TLC 式滑動 pill（main2/40% 底，hover 時文字轉 main1） */
+    .nav-track-list {
+        isolation: isolate;
+    }
 
-  /* 語系項目滑過：底色淡入淡出 */
-  .lang-option {
-    transition: color 0.25s ease;
-  }
+    .nav-tracker {
+        pointer-events: none;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        z-index: 0;
+        height: 2.5rem; /* h-10，對齊選單列高 */
+        width: 0;
+        border-radius: 9999px;
+        background-color: theme('colors.main2 / 40%');
+        opacity: 0;
+        transform: translateY(-50%);
+        transition:
+            left 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .lang-option::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: 12px;
-    background-color: rgba(255, 255, 255, 0.9);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-  }
+    .nav-track-list.is-tracking .nav-tracker {
+        opacity: 1;
+    }
 
-  .lang-option:hover,
-  .lang-option.is-active {
-    color: theme('colors.main1');
-  }
+    .nav-item {
+        position: relative;
+        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .lang-option:hover::before,
-  .lang-option.is-active::before {
-    opacity: 1;
-  }
+    .nav-item.active:not(.is-over) {
+        color: theme('colors.main1');
+    }
+
+    .nav-item-mobile.active {
+        @apply bg-bg text-main1;
+    }
+
+    /* 語系下拉：相對按鈕水平置中；出現時上滑淡入 */
+    .lang-menu {
+        display: flex;
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateX(-50%) translateY(0.625rem);
+        transition:
+            opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+            visibility 0.28s;
+    }
+
+    .lang-menu.is-open {
+        visibility: visible;
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .lang-chevron {
+        transition: transform 0.2s ease;
+    }
+
+    #lang-btn[aria-expanded='true'] .lang-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* 語系項目滑過：底色淡入淡出 */
+    .lang-option {
+        transition: color 0.25s ease;
+    }
+
+    .lang-option::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 12px;
+        background-color: theme('colors.white / 90%');
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .lang-option:hover,
+    .lang-option.is-active {
+        color: theme('colors.main1');
+    }
+
+    .lang-option:hover::before,
+    .lang-option.is-active::before {
+        opacity: 1;
+    }
 }
 
 @layer utilities {
-  .layout-grid {
-    display: flex;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
+    .layout-grid {
+        display: flex;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
 
-    /* 799px 以下 (預設行動版邊距) */
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
+        /* 799px 以下 (預設行動版邊距) */
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
 
-    /* 800px - 1199px 平板 */
-    @screen md {
-      padding-left: 3rem;
-      padding-right: 3rem;
+        /* 800px - 1199px 平板 */
+        @screen md {
+            padding-left: 3rem;
+            padding-right: 3rem;
+        }
+
+        /* 1200px 以上 桌機 */
+        @screen lg {
+            padding-left: 4.5rem;
+            padding-right: 4.5rem;
+            max-width: 1440px;
+        }
     }
 
-    /* 1200px 以上 桌機 */
-    @screen lg {
-      padding-left: 4.5rem;
-      padding-right: 4.5rem;
-      max-width: 1440px;
-    }
-  }
+    .inner-page-padding {
+        padding-top: 56px;
+        padding-bottom: 80px;
 
-  .inner-page-padding {
-    padding-top: 56px;
-    padding-bottom: 80px;
+        @screen md {
+            padding-top: 64px;
+            padding-bottom: 96px;
+        }
 
-    @media (min-width: 880px) {
-      padding-top: 64px;
-      padding-bottom: 96px;
+        @screen lg {
+            padding-top: 96px;
+            padding-bottom: 128px;
+        }
     }
 
-    @screen lg {
-      padding-top: 96px;
-      padding-bottom: 128px;
+    /* bg_dot：白底 + 點狀圖 */
+    .bg-dot {
+        background-color: theme('colors.white');
+        background-image: url('/images/bg-dot.svg');
+        background-repeat: repeat;
+        background-position: top left;
     }
-  }
 
-  /* bg_dot：白底 + 點狀圖 */
-  .bg-dot {
-    background-color: #FFFFFF;
-    background-image: url('/images/bg-dot.svg');
-    background-repeat: repeat;
-    background-position: top left;
-  }
+    /* ================= Chinese Body (Noto Sans TC Medium) ================= */
+    .text-cb1 {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 1.8;
+        letter-spacing: 0.05em;
+    }
 
-  /* ================= Chinese Body (Noto Sans TC Medium) ================= */
-  .text-cb1 {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 1.8;
-    letter-spacing: 0.05em;
-  }
+    .text-cb2 {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 1.9;
+        letter-spacing: 0.02em;
+    }
 
-  .text-cb2 {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 1.9;
-    letter-spacing: 0.02em;
-  }
+    .text-cb3 {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 1.8;
+        letter-spacing: 0.05em;
+    }
 
-  .text-cb3 {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 1.8;
-    letter-spacing: 0.05em;
-  }
+    /* ================= Chinese Heading (Noto Sans TC) ================= */
+    .text-ch1 {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 52px;
+        line-height: 1.2;
+        letter-spacing: 0.02em;
+    }
 
-  /* ================= Chinese Heading (Noto Sans TC) ================= */
-  .text-ch1 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 52px;
-    line-height: 1.2;
-    letter-spacing: 0.02em;
-  }
+    .text-ch2 {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 40px;
+        line-height: 1.2;
+        letter-spacing: 0.05em;
+    }
 
-  .text-ch2 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 40px;
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-  }
+    .text-ch3 {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 32px;
+        line-height: 1.5;
+        letter-spacing: 0.02em;
+    }
 
-  .text-ch3 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 32px;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
-  }
+    .text-ch4 {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 24px;
+        line-height: 1.6;
+        letter-spacing: 0.05em;
+    }
 
-  .text-ch4 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    font-size: 24px;
-    line-height: 1.6;
-    letter-spacing: 0.05em;
-  }
+    .text-ch5 {
+        font-family: var(--font-sans);
+        font-weight: 500;
+        font-size: 20px;
+        line-height: 1.5;
+        letter-spacing: 0.05em;
+    }
 
-  .text-ch5 {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 1.5;
-    letter-spacing: 0.05em;
-  }
+    /* ================= English Body (Outfit Regular) ================= */
+    .text-eb2 {
+        font-family: var(--font-outfit);
+        font-weight: 400;
+        font-size: 16px;
+        line-height: 1.6;
+        letter-spacing: 0.02em;
+    }
 
-  /* ================= English Body (Outfit Regular) ================= */
-  .text-eb2 {
-    font-family: var(--font-outfit);
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.6;
-    letter-spacing: 0.02em;
-  }
+    .text-eb3 {
+        font-family: var(--font-outfit);
+        font-weight: 400;
+        font-size: 13px;
+        line-height: 1.5;
+        letter-spacing: 0.06em;
+    }
 
-  .text-eb3 {
-    font-family: var(--font-outfit);
-    font-weight: 400;
-    font-size: 13px;
-    line-height: 1.5;
-    letter-spacing: 0.06em;
-  }
-
-  /* ================= English Heading (Tenor Sans Regular) ================= */
-  .text-eh1 {
-    font-family: var(--font-display);
-    font-weight: 400;
-    font-size: 60px;
-    line-height: 1.16;
-    letter-spacing: 0.02em;
-  }
+    /* ================= English Heading (Tenor Sans Regular) ================= */
+    .text-eh1 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 60px;
+        line-height: 1.16;
+        letter-spacing: 0.02em;
+    }
 }

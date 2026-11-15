@@ -1,3 +1,6 @@
+// 與 tailwind.config.js 的 screens.lg 一致
+const LG_BREAKPOINT = 1200;
+
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof AOS !== 'undefined') {
         AOS.init({
@@ -15,27 +18,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Lenis 1.x：用 autoRaf；開選單時 stop()，關選單時 start()
 if (typeof Lenis !== 'undefined') {
     const lenis = new Lenis({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-        direction: 'vertical',
-        gestureDirection: 'vertical',
-        smooth: true,
-        mouseMultiplier: 1,
-        smoothTouch: false,
         touchMultiplier: 2,
-        infinite: false,
+        autoRaf: true,
     });
 
     window.lenis = lenis;
-
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
 }
 
 const backToTopBtn = document.getElementById('back-to-top');
@@ -64,6 +56,27 @@ function setMobileMenuIcon(name) {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+
+    if (mobileMenuBtn) {
+        mobileMenuBtn.setAttribute('aria-expanded', name === 'x' ? 'true' : 'false');
+        mobileMenuBtn.setAttribute('aria-label', name === 'x' ? '關閉選單' : '開啟選單');
+    }
+}
+
+function lockPageScroll() {
+    document.documentElement.classList.add('overflow-hidden');
+    document.body.classList.add('overflow-hidden');
+    if (window.lenis) {
+        window.lenis.stop();
+    }
+}
+
+function unlockPageScroll() {
+    document.documentElement.classList.remove('overflow-hidden');
+    document.body.classList.remove('overflow-hidden');
+    if (window.lenis) {
+        window.lenis.start();
+    }
 }
 
 function closeMobileMenu() {
@@ -75,11 +88,8 @@ function closeMobileMenu() {
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.add('hidden');
     }
-    if (mobileMenuBtn) {
-        mobileMenuBtn.setAttribute('aria-expanded', 'false');
-    }
     setMobileMenuIcon('menu');
-    document.body.classList.remove('overflow-hidden');
+    unlockPageScroll();
 }
 
 function openMobileMenu() {
@@ -91,11 +101,8 @@ function openMobileMenu() {
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.remove('hidden');
     }
-    if (mobileMenuBtn) {
-        mobileMenuBtn.setAttribute('aria-expanded', 'true');
-    }
     setMobileMenuIcon('x');
-    document.body.classList.add('overflow-hidden');
+    lockPageScroll();
 }
 
 function toggleMobileMenu() {
@@ -115,11 +122,11 @@ if (mobileMenuBtn && navMenu) {
 }
 
 window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1200) {
+    if (window.innerWidth >= LG_BREAKPOINT) {
         closeMobileMenu();
         closeLangMenu();
     }
-    syncNavTrackerToActive();
+    hideNavTracker();
 });
 
 /* ---------- Nav sliding tracker (TLC-style) ---------- */
@@ -142,6 +149,7 @@ function moveNavTrackerTo(el) {
     navTrackList.classList.add('is-tracking');
 }
 
+// 對齊 TLC：非 hover 時收起 tracker；目前頁面僅用文字色標示 active
 function hideNavTracker() {
     if (!navTrackList || !navTracker) {
         return;
@@ -149,11 +157,6 @@ function hideNavTracker() {
 
     navTrackList.classList.remove('is-tracking');
     navTrackItems.forEach((item) => item.classList.remove('is-over'));
-}
-
-function syncNavTrackerToActive() {
-    // 對齊 TLC：非 hover 時收起 tracker；目前頁面僅用文字色標示 active
-    hideNavTracker();
 }
 
 if (navTrackList && navTracker) {
@@ -225,17 +228,33 @@ document.querySelectorAll('.lang-option').forEach((option) => {
 /* ---------- Home hero swiper ---------- */
 const heroSwiperEl = document.getElementById('hero-swiper');
 if (heroSwiperEl && typeof Swiper !== 'undefined') {
+    const heroSection = document.getElementById('home-hero');
     const heroCopy = document.getElementById('hero-copy');
     const heroTitle = document.getElementById('hero-title');
     const heroBody = document.getElementById('hero-body');
     const heroLink = document.getElementById('hero-link');
     const heroCurrent = document.getElementById('hero-current');
-    const heroPrev = document.querySelector('[data-hero-prev]');
-    const heroNext = document.querySelector('[data-hero-next]');
+    const heroDots = [...document.querySelectorAll('[data-hero-dot]')];
+    const heroCursor = document.querySelector('.hero-cursor');
+    const heroCursorProgress = document.getElementById('hero-cursor-progress');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    // 待確認：滑鼠停在 hero 上是否暫停自動播放；預設不暫停
+    const pauseOnHover = heroSection?.dataset.heroPauseOnHover === 'true';
+    const CURSOR_RING_LEN = 2 * Math.PI * 43.875; // r=43.875，對齊 90px 游標
+    const CURSOR_HALF = 45;
 
     function pad2(n) {
         return String(n).padStart(2, '0');
+    }
+
+    function isHeroChrome(target) {
+        return Boolean(
+            target?.closest?.(
+                // 左側文案／Read more／頁數：等同離開 hero，整顆關掉自訂游標、不觸發換頁
+                '.hero-footer .hero-enter, .hero-pager, a, button, input, textarea, select, label'
+            )
+        );
     }
 
     function applyHeroCopy(slide) {
@@ -250,8 +269,21 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
             heroBody.textContent = slide.getAttribute('data-hero-body') || '';
         }
         if (heroLink) {
-            heroLink.setAttribute('href', slide.getAttribute('data-hero-link') || '/products/');
+            heroLink.setAttribute('href', slide.getAttribute('data-hero-link') || '#');
         }
+    }
+
+    function syncHeroPager(swiper) {
+        const index = swiper.realIndex;
+        if (heroCurrent) {
+            heroCurrent.textContent = pad2(index + 1);
+        }
+
+        heroDots.forEach((dot, i) => {
+            const active = i === index;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
     }
 
     function syncHeroCopy(swiper, animate) {
@@ -260,9 +292,7 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
             return;
         }
 
-        if (heroCurrent) {
-            heroCurrent.textContent = pad2(swiper.realIndex + 1);
-        }
+        syncHeroPager(swiper);
 
         if (!animate || reduceMotion || !heroCopy) {
             applyHeroCopy(slide);
@@ -276,16 +306,22 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         }, 220);
     }
 
-    const heroSection = document.getElementById('home-hero');
-    const heroRing = document.getElementById('hero-ring');
-    const RING_LEN = 2 * Math.PI * 38; // r=38
-
-    function setRing(fraction) {
-        if (!heroRing) {
+    function setCursorProgress(fraction) {
+        if (!heroCursorProgress) {
             return;
         }
         const f = Math.min(1, Math.max(0, fraction));
-        heroRing.style.strokeDashoffset = String(RING_LEN * (1 - f));
+        heroCursorProgress.style.strokeDashoffset = String(CURSOR_RING_LEN * (1 - f));
+    }
+
+    // 進度環 = 目前第幾張／總張數（例如 2/3 → 約 66%），不是自動播放秒數
+    function syncCursorSlideProgress(swiper) {
+        const total = swiper.slides.filter((s) => !s.classList.contains('swiper-slide-duplicate')).length;
+        if (!total) {
+            setCursorProgress(0);
+            return;
+        }
+        setCursorProgress((swiper.realIndex + 1) / total);
     }
 
     const heroSwiper = new Swiper(heroSwiperEl, {
@@ -299,16 +335,12 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
             : {
                   delay: 5200,
                   disableOnInteraction: false,
-                  pauseOnMouseEnter: false,
+                  pauseOnMouseEnter: pauseOnHover,
               },
         on: {
             init(swiper) {
                 syncHeroCopy(swiper, false);
-                if (reduceMotion) {
-                    setRing((swiper.realIndex + 1) / swiper.slides.filter((s) => !s.classList.contains('swiper-slide-duplicate')).length);
-                } else {
-                    setRing(0);
-                }
+                syncCursorSlideProgress(swiper);
                 if (heroSection) {
                     requestAnimationFrame(() => {
                         heroSection.classList.add('is-ready');
@@ -317,29 +349,140 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
             },
             slideChange(swiper) {
                 syncHeroCopy(swiper, true);
-                if (reduceMotion) {
-                    const total = swiper.slides.filter((s) => !s.classList.contains('swiper-slide-duplicate')).length;
-                    setRing((swiper.realIndex + 1) / total);
-                }
-            },
-            // 倒數進度 1 → 0：進度圈 0 → 滿，與換頁同步
-            autoplayTimeLeft(swiper, timeLeft, percentage) {
-                setRing(1 - percentage);
+                syncCursorSlideProgress(swiper);
             },
         },
     });
 
-    if (heroPrev) {
-        heroPrev.addEventListener('click', () => heroSwiper.slidePrev());
+    heroDots.forEach((dot) => {
+        dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = Number(dot.getAttribute('data-hero-dot'));
+            if (!Number.isNaN(index)) {
+                heroSwiper.slideToLoop(index);
+            }
+        });
+    });
+
+    /* 鍵盤：hero 取得焦點（或焦點在其內）時，左右方向鍵換頁 */
+    if (heroSection) {
+        heroSection.addEventListener('keydown', (e) => {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                return;
+            }
+            if (!heroSection.contains(document.activeElement) && document.activeElement !== heroSection) {
+                return;
+            }
+            e.preventDefault();
+            if (e.key === 'ArrowLeft') {
+                heroSwiper.slidePrev();
+            } else {
+                heroSwiper.slideNext();
+            }
+        });
     }
-    if (heroNext) {
-        heroNext.addEventListener('click', () => heroSwiper.slideNext());
+
+    /* 桌機：點左半上一張、右半下一張（Read more／頁點除外） */
+    if (heroSection && canHover) {
+        heroSection.addEventListener('click', (e) => {
+            if (e.pointerType && e.pointerType !== 'mouse') {
+                return;
+            }
+            if (isHeroChrome(e.target)) {
+                return;
+            }
+
+            const rect = heroSection.getBoundingClientRect();
+            if (e.clientX >= rect.left + rect.width / 2) {
+                heroSwiper.slideNext();
+            } else {
+                heroSwiper.slidePrev();
+            }
+        });
+    }
+
+    /* 桌機自訂游標：跟隨滑鼠、左右半邊換箭頭。
+       離開 hero（含疊在上方的主選單）→ pointerleave 整顆關掉。
+       左側文案／Read more／頁點同理：整顆關掉，恢復系統游標。
+       prefers-reduced-motion 時不啟用。游標掛 body 以利 backdrop-filter。 */
+    if (heroSection && heroCursor && canHover && !reduceMotion) {
+        let cursorDir = 'next';
+        let cursorVisible = false;
+
+        if (heroCursor.parentElement !== document.body) {
+            document.body.appendChild(heroCursor);
+        }
+
+        function placeCursor(clientX, clientY) {
+            heroCursor.style.transform = `translate3d(${clientX - CURSOR_HALF}px, ${clientY - CURSOR_HALF}px, 0)`;
+        }
+
+        function setCursorDir(dir) {
+            if (cursorDir === dir) {
+                return;
+            }
+            cursorDir = dir;
+            heroCursor.dataset.dir = dir;
+        }
+
+        function showCursor() {
+            if (cursorVisible) {
+                return;
+            }
+            cursorVisible = true;
+            heroSection.classList.add('is-cursor-on');
+            heroCursor.classList.add('is-visible');
+        }
+
+        function hideCursor() {
+            if (!cursorVisible) {
+                return;
+            }
+            cursorVisible = false;
+            heroSection.classList.remove('is-cursor-on');
+            heroCursor.classList.remove('is-visible');
+        }
+
+        heroSection.addEventListener('pointerenter', (e) => {
+            if (e.pointerType !== 'mouse') {
+                return;
+            }
+            if (isHeroChrome(e.target)) {
+                hideCursor();
+                return;
+            }
+            showCursor();
+            placeCursor(e.clientX, e.clientY);
+        });
+
+        // 主選單在 hero DOM 外：滑上去會 pointerleave → 整顆關掉
+        heroSection.addEventListener('pointerleave', () => {
+            hideCursor();
+        });
+
+        heroSection.addEventListener('pointermove', (e) => {
+            if (e.pointerType !== 'mouse') {
+                return;
+            }
+
+            // 左側文案等同離開：整顆關掉自訂游標
+            if (isHeroChrome(e.target)) {
+                hideCursor();
+                return;
+            }
+
+            showCursor();
+            placeCursor(e.clientX, e.clientY);
+
+            const rect = heroSection.getBoundingClientRect();
+            const onRight = e.clientX >= rect.left + rect.width / 2;
+            setCursorDir(onRight ? 'next' : 'prev');
+        });
     }
 
     /* 3D 傾斜：滑鼠在 hero 內移動時，產品朝滑鼠方向轉。
        效能：節點只查一次並快取；每幀直接寫 element.style.transform，
        不透過 CSS 變數，避免整棵子樹樣式重算。 */
-    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (heroSection && canHover && !reduceMotion) {
         const MAX_TILT = 9; // 最大傾斜角（度）
         const EASE = 0.08; // 跟隨緩動，越小越滑順
@@ -401,4 +544,103 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
             kick();
         });
     }
+}
+
+/* ---------- Home product slider ---------- */
+const productSwiperEl = document.getElementById('product-swiper');
+if (productSwiperEl && typeof Swiper !== 'undefined') {
+    const productCurrent = document.getElementById('product-current');
+    const productTotal = document.getElementById('product-total');
+    const productDotsEl = document.getElementById('product-pager-dots');
+    const reduceMotionProducts = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let productDots = [];
+
+    function pad2(n) {
+        return String(n).padStart(2, '0');
+    }
+
+    function rebuildProductDots(swiper) {
+        if (!productDotsEl) {
+            return;
+        }
+
+        const total = Math.max(swiper.snapGrid.length, 1);
+        productDotsEl.replaceChildren();
+        productDots = [];
+
+        for (let i = 0; i < total; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'pager-dot' + (i === swiper.snapIndex ? ' is-active' : '');
+            btn.setAttribute('role', 'tab');
+            btn.setAttribute('data-product-dot', String(i));
+            btn.setAttribute('aria-label', `第 ${i + 1} 頁，共 ${total} 頁`);
+            btn.setAttribute('aria-selected', i === swiper.snapIndex ? 'true' : 'false');
+
+            const pill = document.createElement('span');
+            pill.className = 'pager-dot-pill';
+            pill.setAttribute('aria-hidden', 'true');
+            btn.appendChild(pill);
+
+            btn.addEventListener('click', () => {
+                swiper.slideTo(i);
+            });
+
+            productDotsEl.appendChild(btn);
+            productDots.push(btn);
+        }
+    }
+
+    function syncProductPager(swiper) {
+        const total = Math.max(swiper.snapGrid.length, 1);
+        const index = Math.min(Math.max(swiper.snapIndex, 0), total - 1);
+
+        if (productCurrent) {
+            productCurrent.textContent = pad2(index + 1);
+        }
+        if (productTotal) {
+            productTotal.textContent = pad2(total);
+        }
+
+        if (productDots.length !== total) {
+            rebuildProductDots(swiper);
+            return;
+        }
+
+        productDots.forEach((dot, i) => {
+            const active = i === index;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-selected', active ? 'true' : 'false');
+        });
+    }
+
+    new Swiper(productSwiperEl, {
+        slidesPerView: 1.25,
+        spaceBetween: 16,
+        speed: reduceMotionProducts ? 0 : 600,
+        watchOverflow: true,
+        breakpoints: {
+            800: {
+                slidesPerView: 2.4,
+                spaceBetween: 20,
+            },
+            1200: {
+                // 對齊稿：桌機 4 卡；6 張 → snap 約 3 頁（01 / 03）
+                slidesPerView: 4,
+                spaceBetween: 24,
+            },
+        },
+        on: {
+            init(swiper) {
+                rebuildProductDots(swiper);
+                syncProductPager(swiper);
+            },
+            slideChange(swiper) {
+                syncProductPager(swiper);
+            },
+            resize(swiper) {
+                syncProductPager(swiper);
+            },
+        },
+    });
 }
