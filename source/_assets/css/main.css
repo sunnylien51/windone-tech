@@ -106,15 +106,537 @@
     }
 
     .footer-link {
-        @apply text-main1 text-cb2 transition-colors hover:text-main2;
+        @apply text-gray3 text-cb2 transition-colors hover:text-main2;
+    }
+
+    /* 頁尾底：bg_main；上方圓角 40px（與 home-top 對稱） */
+    .site-footer {
+        position: relative;
+        background-color: #edeff5;
+        border-top-left-radius: 40px;
+        border-top-right-radius: 40px;
+        overflow: hidden;
+    }
+
+    .site-footer::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: url('/images/bg_main.webp');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .site-footer > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 回到頂部：置於 layout-grid 右側 padding 正中（lg: 4.5rem） */
+    .footer-back-top {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        z-index: 2;
+        display: none;
+        width: 80px;
+        transform: translateY(-50%);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.625rem; /* gap-2.5 */
+        color: theme('colors.gray3');
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .footer-back-top:hover {
+        color: theme('colors.main2');
+    }
+
+    @screen lg {
+        .footer-back-top {
+            display: flex;
+        }
+    }
+
+    /* Footer Get in Touch：圓鈕略大（48px）；滑過整卡＝按鈕 hover 變色 */
+    .footer-touch .btn-icon-solid {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .footer-touch .btn-icon-solid::before {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .footer-touch .btn-icon-solid [data-lucide] {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+
+    .footer-touch:hover .btn-icon-solid {
+        @apply bg-main1 outline-main1;
+    }
+
+    /* 企業理念：sticky 疊卡，方案 1
+       - 三張同高（上限稿 542；矮螢幕再縮）
+       - top 遞增標題列高，上一張標題露出
+       - 不用負 margin：進區塊時先完整看到第一張，再往下叠 */
+    .values-stack {
+        --values-peek: 4rem;
+        --values-base-top: 5rem;
+        --values-safe-bottom: 1.5rem;
+        --values-max-height: 26rem;
+        --values-last-index: 2;
+        --values-card-height: min(
+            var(--values-max-height),
+            calc(
+                100svh - var(--values-base-top) - (var(--values-last-index) * var(--values-peek)) -
+                    var(--values-safe-bottom)
+            )
+        );
+
+        /* 最後一張釘在 base + 2×peek 後，再多滾這麼多才整疊離場（越大停越久） */
+        --values-hold: 4rem;
+
+        /* 上排小字：高度、與第一張的間距 */
+        --values-gap: 3rem;
+        --values-label-height: 1.25rem;
+
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: var(--values-gap);
+    }
+
+    /* 上排小字：釘在第一張正上方，離場時與整疊維持同樣間距
+       下限＝第一張的下限，所以 margin-bottom 要補到「第一張底邊 + 緩衝」 */
+    .values-label {
+        --values-label-offset: calc(
+            (var(--values-last-index) * var(--values-peek)) + var(--values-card-height) + var(--values-gap)
+        );
+
+        position: sticky;
+        top: calc(var(--values-base-top) - var(--values-label-height) - var(--values-gap));
+        z-index: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        width: 100%;
+        height: var(--values-label-height);
+        margin-bottom: var(--values-label-offset);
+    }
+
+    /* sticky 只能待在父層範圍內；最後一張後面要有空間，才釘得住而不是一路蓋過去 */
+    .values-stack::after {
+        content: '';
+        display: block;
+        flex-shrink: 0;
+        height: var(--values-hold);
+        pointer-events: none;
+    }
+
+    .values-card {
+        --values-index: 0;
+
+        position: sticky;
+        top: calc(var(--values-base-top) + (var(--values-index) * var(--values-peek)));
+        z-index: 1;
+        width: 100%;
+        height: var(--values-card-height);
+        border-radius: 2rem;
+        background-color: transparent;
+        /* rgba(14,26,43,0.10) = gray5/10；向上陰影（外層不 clip） */
+        box-shadow: 0 -15px 30px 0 theme('colors.gray5 / 10%');
+
+        /* 整疊離場時保持釘住的樣子（每張上緣差 peek），不會互相蓋住：
+           sticky 的下限是「margin 外緣不超出父層」，所以前面的卡底下多留 (last − index) × peek */
+        margin-bottom: calc((var(--values-last-index) - var(--values-index)) * var(--values-peek));
+    }
+
+    /* 上面多出來的 margin-bottom，在下一張用負 margin-top 抵銷，一般排版間距不變 */
+    .values-card:not(:first-of-type) {
+        margin-top: calc(-1 * (var(--values-last-index) - var(--values-index) + 1) * var(--values-peek));
+    }
+
+    /* 第一張要抵銷上排小字的 margin-bottom */
+    .values-card:first-of-type {
+        margin-top: calc(
+            -1 * ((var(--values-last-index) * var(--values-peek)) + var(--values-card-height) + var(--values-gap))
+        );
+    }
+
+    /* 小字在 stack 內，改用 nth-of-type 只算 article（卡片） */
+    .values-card:nth-of-type(1) {
+        --values-index: 0;
+        z-index: 1;
+    }
+
+    .values-card:nth-of-type(2) {
+        --values-index: 1;
+        z-index: 2;
+    }
+
+    .values-card:nth-of-type(3) {
+        --values-index: 2;
+        z-index: 3;
+    }
+
+    .values-card-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 0 1.5rem 2.5rem;
+        border-radius: inherit;
+        overflow: hidden;
+        background-color: theme('colors.gray5');
+    }
+
+    .values-card-media {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* 對齊稿：slate-900/40 蓋在照片上 */
+    .values-card-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background-color: theme('colors.gray5 / 50%');
+        pointer-events: none;
+    }
+
+    .values-card-body {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+    }
+
+    .values-card-num {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: clamp(5rem, 14vw, 10rem);
+        line-height: 0.8;
+        color: theme('colors.white / 30%');
+        flex-shrink: 0;
+        user-select: none;
+    }
+
+    @screen md {
+        .values-stack {
+            --values-peek: 5rem; /* h-20 */
+            --values-base-top: 5.5rem;
+            --values-max-height: 30rem;
+        }
+
+        .values-card {
+            border-radius: 2.5rem;
+        }
+
+        .values-card-inner {
+            padding-left: 3rem;
+            padding-right: 3rem;
+            padding-bottom: 3rem;
+        }
+    }
+
+    @screen lg {
+        .values-stack {
+            --values-peek: 5rem; /* 標題列 h-20 */
+            --values-base-top: 6.5rem;
+            --values-safe-bottom: 2rem;
+            --values-max-height: 33.875rem; /* 542px 稿高 */
+        }
+
+        .values-card {
+            border-radius: 50px;
+        }
+
+        .values-card-inner {
+            padding-left: 4rem; /* px-16 */
+            padding-right: 4rem;
+            padding-bottom: 3.5rem; /* pb-14 */
+        }
+
+        .values-card-num {
+            font-size: 10rem; /* 160px */
+            line-height: 8rem; /* 128px */
+        }
+    }
+
+    /* 首頁數據區：bg_data 底圖 + gray5/50 遮罩（稿 slate-900/50），圓角 40px
+       lg：左文案 flex-1 ＋ 兩欄各 w-96，總高 620px；以下改直排
+       底圖獨立層．data-panel-bg：加高方便視差位移，JS 用 translate3d */
+    .data-panel {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border-radius: 2.5rem; /* 40px */
+        background-color: theme('colors.gray5');
+    }
+
+    /* 上下各多 50%（height 200%）；JS 位移會 clamp 在此範圍內，避免露底 */
+    .data-panel-bg {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: -50%;
+        height: 200%;
+        z-index: -2;
+        pointer-events: none;
+        background-image: url('/images/bg_data.webp');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+    }
+
+    .data-panel::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-color: theme('colors.gray5 / 50%');
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .data-panel-bg {
+            top: 0;
+            height: 100%;
+            will-change: auto;
+            transform: none !important;
+        }
+    }
+
+    /* 欄位撐滿面板（含左右圓角），大字母才能貼齊面板左右緣；
+       不要 max-width:1440，否則寬螢幕兩側會空出一截 */
+    .data-panel-inner {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    @screen lg {
+        .data-panel-inner {
+            flex-direction: row;
+            height: 620px;
+        }
+    }
+
+    .data-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        overflow: hidden;
+        min-height: 240px; /* 讓 flex-1 的欄位不會被內容撐高 */
+    }
+
+    /* 同一欄內的多筆數據：手機／平板左右並列，lg 直排 */
+    .data-col-stats {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1.5rem 2rem;
+        width: 100%;
+    }
+
+    @screen lg {
+        .data-col-stats {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: 6rem; /* lg:gap-24 */
+            width: auto;
+        }
+    }
+
+    /* 標題上方的雙色細條：main2 ＋ gray2/60 */
+    .accent-bar {
+        display: inline-flex;
+        align-items: flex-start;
+    }
+
+    .accent-bar::before,
+    .accent-bar::after {
+        content: '';
+        display: block;
+        height: 3px;
+    }
+
+    .accent-bar::before {
+        width: 1.75rem; /* 28px */
+        border-radius: 10px 0 0 10px;
+        background-color: theme('colors.main2');
+    }
+
+    .accent-bar::after {
+        width: 2.75rem; /* 44px */
+        border-radius: 0 10px 10px 0;
+        background-color: theme('colors.gray2 / 60%');
+    }
+
+    /* 首頁 About：玻璃浮標僅桌機顯示 */
+    .about-badge {
+        display: none;
+    }
+
+    @screen lg {
+        .about-badge {
+            position: absolute;
+            left: -94px;
+            top: 487px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1rem;
+            padding: 1.5rem 1.75rem;
+            border-radius: 30px;
+            overflow: hidden;
+            background-color: theme('colors.white / 30%');
+            -webkit-backdrop-filter: blur(12px) saturate(140%);
+            backdrop-filter: blur(12px) saturate(140%);
+            box-shadow: 0 12px 32px 0 theme('colors.gray5 / 10%');
+        }
+    }
+
+    /* 首頁 Partners：全斷點單列 slider */
+    .partner-swiper {
+        width: 100%;
+        overflow: hidden;
+        cursor: grab;
+        touch-action: pan-y;
+    }
+
+    .partner-swiper:active {
+        cursor: grabbing;
+    }
+
+    .partner-swiper .swiper-slide {
+        height: auto;
+        user-select: none;
+    }
+
+    .partner-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 3.5rem; /* 手機：等比 contain，格子／邊線跟著變矮 */
+        padding: 0.5rem 0.75rem;
+        overflow: hidden;
+        border-left: 1px solid theme('colors.gray1');
+    }
+
+    .partner-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        pointer-events: none;
+        -webkit-user-drag: none;
+        filter: grayscale(100%);
+        opacity: 0.6;
+        transition:
+            filter 0.3s ease,
+            opacity 0.3s ease;
+    }
+
+    .partner-logo:hover img {
+        filter: grayscale(0%);
+        opacity: 1;
+    }
+
+    @screen lg {
+        .partner-logo {
+            height: 5rem; /* h-20 */
+            padding: 0;
+        }
+
+        .partner-logo img {
+            object-fit: cover;
+        }
+    }
+
+    /* 裁切框：無底色，只裁字母；全斷點貼各欄右下（手機／平板／桌機） */
+    .data-col-media {
+        position: absolute;
+        right: 0;
+        left: auto;
+        bottom: 0;
+        width: 10rem; /* 手機／平板較小 */
+        height: 8rem;
+        flex-shrink: 0;
+        overflow: hidden;
+        background-color: transparent;
+        pointer-events: none;
+    }
+
+    @screen lg {
+        .data-col-media {
+            width: 16rem;
+            height: 12rem;
+        }
+    }
+
+    /* 大字母：白 10%；手機／平板較小，桌機 240px
+       超出框的部分被 .data-col-media 裁掉 */
+    .data-col-letter {
+        position: absolute;
+        right: auto;
+        left: 56px;
+        bottom: 10;
+        z-index: 1;
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 10rem;
+        line-height: 0.75;
+        color: theme('colors.white / 10%');
+        transform: translateY(28%);
+        pointer-events: none;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    @screen lg {
+        .data-col-letter {
+            right: auto;
+            left: 105px; /* 桌機微調位置（沿用你原本設定） */
+            font-size: 15rem; /* 240px */
+        }
     }
 
     /* 首頁頂區：hero + 產品 slider 共用 bg_main；下方圓角 40px
-       不可對「整段變高的容器」直接 background-size:cover，否則底圖會被放大裁成一片淡色。
-       改用 ::before + 100% auto，視覺縮放對齊原本單屏 hero。 */
+       維護策略：::before 用 100% auto（勿改 cover，整段變高會放大裁淡）；
+       圖蓋不住的底部用 background-color 接圖底色（取樣自 bg_main 底部 ≈ #EDEFF5）。 */
     .home-top {
         position: relative;
-        background-color: #e8eef5;
+        background-color: #edeff5;
         border-bottom-left-radius: 40px;
         border-bottom-right-radius: 40px;
         overflow: hidden;
@@ -135,6 +657,33 @@
     .home-top > * {
         position: relative;
         z-index: 1;
+    }
+
+    /* 內頁橫幅：底圖用絕對定位方圖，可延伸進下方內文；
+       裁切交給 body.is-inner .site-main（不要裁在 banner 自己身上） */
+    .page-banner {
+        position: relative;
+    }
+
+    .page-banner-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 0;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .page-banner > *:not(.page-banner-bg) {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 內頁：在 footer 之上裁掉溢出底圖，避免頁尾下方出現空白可捲區 */
+    body.is-inner > .site-main {
+        overflow: clip;
     }
 
     /* 產品卡：整卡可點；滑過時上移 30px、光暈擴大 */
@@ -254,12 +803,19 @@
         background-color: theme('colors.gray5');
     }
 
-    /* Hero：右下角定位（右 80px、底 64px，與 Read more 底邊對齊） */
+    /* Hero 頁碼：手機靠右下、避開 Read more；md+ 右 80px／底 64px */
     .hero-pager {
         position: absolute;
-        right: 5rem;
-        bottom: 4rem;
+        right: 1.5rem; /* 24px：手機靠右 */
+        bottom: 1.5rem; /* 24px：比 Read more 更靠下 */
         z-index: 20;
+    }
+
+    @screen md {
+        .hero-pager {
+            right: 5rem;
+            bottom: 4rem;
+        }
     }
 
     /* 產品區：同組件，頁碼＋節點一組靠左 */
@@ -561,7 +1117,7 @@
         }
     }
 
-    /* Nav：TLC 式滑動 pill（main2/40% 底，hover 時文字轉 main1） */
+    /* Nav：TLC 式滑動 pill（main2/40% 底）；當前頁文字不換色，維持 gray5 */
     .nav-track-list {
         isolation: isolate;
     }
@@ -590,15 +1146,11 @@
 
     .nav-item {
         position: relative;
-        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .nav-item.active:not(.is-over) {
-        color: theme('colors.main1');
-    }
-
+    /* 手機／平板當前頁：僅底色標示，文字維持 gray5 */
     .nav-item-mobile.active {
-        @apply bg-bg text-main1;
+        @apply bg-bg text-gray5;
     }
 
     /* 語系下拉：相對按鈕水平置中；出現時上滑淡入 */
@@ -640,7 +1192,7 @@
         inset: 0;
         z-index: -1;
         border-radius: 12px;
-        background-color: theme('colors.white / 90%');
+        background-color: theme('colors.white / 50%');
         opacity: 0;
         transition: opacity 0.25s ease;
     }
@@ -788,11 +1340,18 @@
     }
 
     /* ================= English Heading (Tenor Sans Regular) ================= */
+    /* 平板以下（< lg 1200）48px；桌機 60px */
     .text-eh1 {
         font-family: var(--font-display);
         font-weight: 400;
-        font-size: 60px;
+        font-size: 46px;
         line-height: 1.16;
         letter-spacing: 0.02em;
+    }
+
+    @screen lg {
+        .text-eh1 {
+            font-size: 60px;
+        }
     }
 }

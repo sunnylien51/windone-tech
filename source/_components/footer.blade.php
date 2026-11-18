@@ -1,93 +1,112 @@
 @php
     $contactInfo = $page->asArray($page->contactInfo ?? []);
-    $socialLinks = $page->asArray($page->socialLinks ?? []);
-    $socialIcons = [
-        'facebook' => '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>',
-        'instagram' => '<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>',
-        'youtube' => '<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>',
-    ];
-    $visibleSocial = [];
-    foreach ($socialLinks as $social) {
-        $social = $page->asArray($social);
-        $url = $social['url'] ?? '';
-        // 留空不輸出；'#' 仍當佔位顯示（本站開發中沿用）
-        if ($url !== '') {
-            $visibleSocial[] = $social;
-        }
-    }
+    $navItems = $page->asArray($page->navItems ?? []);
+    $navColumns = array_chunk($navItems, 2);
 @endphp
 
-<footer class="w-full relative mt-auto">
-    <div class="w-full bg-white rounded-t-[40px] lg:rounded-t-[72px] shadow-[0px_-16px_48px_0px_rgba(14,26,43,0.06)]">
-        <div class="layout-grid pt-16 lg:pt-20 pb-10 flex flex-col gap-12 lg:gap-16">
-            <div class="w-full flex flex-col lg:flex-row justify-between items-start gap-8">
-                <div class="flex flex-col gap-3">
-                    <a href="/" class="inline-flex">
-                        <img src="/images/logo.svg" alt="{{ $page->siteName }}" class="h-8 w-auto">
-                    </a>
-                    <p class="text-cb2 text-gray3 max-w-md">{{ $page->siteDescription }}</p>
+{{-- ----------------------------------------------------------------------
+     ★ SECTION · Footer - 頁尾
+     ---------------------------------------------------------------------- --}}
+<footer class="site-footer w-full mt-auto">
+    <div class="relative px-6 md:px-12 lg:px-20 pt-20 pb-8 flex flex-col items-center gap-8">
+        {{-- 主卡片：聯絡 CTA + ACCESS／MENU --}}
+        <div class="w-full p-5 bg-white/80 rounded-[36px] shadow-[0px_0px_26px_0px_rgba(0,0,0,0.05)] flex flex-col lg:flex-row justify-start items-stretch gap-10 lg:gap-24 overflow-hidden">
+            {{-- Get in Touch --}}
+            <a
+                href="/contact/"
+                class="footer-touch relative w-full lg:w-[500px] h-56 md:h-72 shrink-0 bg-gray5 rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl flex flex-col justify-between items-end overflow-hidden"
+                aria-label="聯絡我們"
+            >
+                <img
+                    src="/images/getintouch.jpg"
+                    alt=""
+                    class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    aria-hidden="true"
+                >
+                <span class="absolute inset-0 bg-gray5/50 pointer-events-none" aria-hidden="true"></span>
+
+                <div class="relative z-10 self-stretch px-8 py-7 flex flex-col items-start">
+                    <span class="text-eb3 text-white/90">CONTACT</span>
+                    <span class="font-outfit text-[30px] font-medium leading-10 tracking-wide text-white">Get in Touch</span>
                 </div>
 
-                @if (count($visibleSocial) > 0)
-                    <div class="flex items-center gap-4">
-                        @foreach ($visibleSocial as $social)
-                            @php
-                                $icon = $social['icon'] ?? '';
-                                $svg = $socialIcons[$icon] ?? null;
-                            @endphp
-                            @if ($svg)
-                                <a href="{{ $social['url'] }}" class="w-10 h-10 rounded-full border border-gray1 flex items-center justify-center text-main1 hover:bg-main1 hover:text-white transition-colors" aria-label="{{ $social['label'] ?? $icon }}"@if (($social['url'] ?? '') !== '#') target="_blank" rel="noopener noreferrer"@endif>
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{!! $svg !!}</svg>
-                                </a>
+                {{-- 右下角裝飾圖＋圓形按鈕 --}}
+                <div class="relative z-10 w-20 h-20 shrink-0">
+                    <img
+                        src="/images/getintouch-rb.svg"
+                        alt=""
+                        width="80"
+                        height="80"
+                        class="absolute inset-0 w-full h-full pointer-events-none"
+                        aria-hidden="true"
+                    >
+                    <span class="btn-icon-solid absolute bottom-0 right-0" aria-hidden="true">
+                        <i data-lucide="arrow-up-right"></i>
+                    </span>
+                </div>
+            </a>
+
+            {{-- ACCESS + MENU --}}
+            <div class="flex-1 self-stretch py-4 pr-0 lg:pr-2.5 flex flex-col justify-between overflow-hidden">
+                <div class="w-full flex flex-col md:flex-row justify-between items-start gap-10 md:gap-8 overflow-hidden">
+                    <div class="w-full md:w-72 flex flex-col items-start gap-3">
+                        <span class="text-eb3 text-gray2">ACCESS</span>
+                        <div class="w-full flex flex-col items-start gap-1">
+                            @if (!empty($contactInfo['address']))
+                                <p class="text-cb2 text-gray3">{{ $contactInfo['address'] }}</p>
                             @endif
+                            @if (!empty($contactInfo['tel']))
+                                <a
+                                    href="tel:{{ $contactInfo['telHref'] ?? preg_replace('/\D+/', '', $contactInfo['tel']) }}"
+                                    class="footer-link"
+                                >電話｜{{ $contactInfo['tel'] }}</a>
+                            @endif
+                            @if (!empty($contactInfo['email']))
+                                <a href="mailto:{{ $contactInfo['email'] }}" class="footer-link">Email｜{{ $contactInfo['email'] }}</a>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-10 md:gap-8">
+                        @foreach ($navColumns as $column)
+                            <div class="w-28 flex flex-col items-start gap-3">
+                                @if ($loop->first)
+                                    <span class="text-eb3 text-gray2">MENU</span>
+                                @else
+                                    <span class="text-eb3 text-transparent select-none" aria-hidden="true">MENU</span>
+                                @endif
+                                <div class="w-full flex flex-col items-start gap-1">
+                                    @foreach ($column as $item)
+                                        <a href="{{ $item['path'] }}/" class="footer-link">{{ $item['label'] }}</a>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
                     </div>
-                @endif
-            </div>
-
-            <div class="w-full flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-16">
-                <div class="w-full lg:w-auto grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 lg:min-w-[420px]">
-                    @if (!empty($contactInfo['tel']))
-                        <div class="flex flex-col items-start gap-1">
-                            <span class="text-gray3 text-eb3 uppercase">電話</span>
-                            <a href="tel:{{ $contactInfo['telHref'] ?? preg_replace('/\D+/', '', $contactInfo['tel']) }}" class="footer-link">{{ $contactInfo['tel'] }}</a>
-                        </div>
-                    @endif
-                    @if (!empty($contactInfo['email']))
-                        <div class="flex flex-col items-start gap-1">
-                            <span class="text-gray3 text-eb3 uppercase">信箱</span>
-                            <a href="mailto:{{ $contactInfo['email'] }}" class="footer-link">{{ $contactInfo['email'] }}</a>
-                        </div>
-                    @endif
-                    @if (!empty($contactInfo['address']))
-                        <div class="flex flex-col items-start gap-1 md:col-span-2">
-                            <span class="text-gray3 text-eb3 uppercase">地址</span>
-                            <span class="text-main1 text-cb2">{{ $contactInfo['address'] }}</span>
-                        </div>
-                    @endif
                 </div>
-
-                <div class="hidden lg:block w-px self-stretch bg-gray1"></div>
-
-                <div class="flex-1 w-full max-w-[640px] grid grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
-                    @foreach ($page->navItems->chunk(2) as $column)
-                        <div class="flex flex-col items-start gap-3">
-                            @foreach ($column as $item)
-                                <a href="{{ $item['path'] }}/" class="footer-link">{{ $item['label'] }}</a>
-                            @endforeach
-                        </div>
-                    @endforeach
-                    <div class="flex flex-col items-start gap-1">
-                        <span class="text-main1 text-cb2 mb-1">條款</span>
-                        <a href="/privacy/" class="text-gray3 text-cb2 hover:text-main2 transition-colors">隱私權聲明</a>
-                        <a href="/terms/" class="text-gray3 text-cb2 hover:text-main2 transition-colors">使用者條款</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-full pt-4 text-gray3 text-cb3">
-                <div>© {{ date('Y') }} {{ $page->siteName }}. Designed by <a href="https://ppnet.tw/" target="_blank" rel="noopener noreferrer" class="hover:text-main1 transition-colors underline">PPNET</a></div>
             </div>
         </div>
+
+        {{-- 版權列 --}}
+        <div class="w-full flex flex-wrap justify-center items-center gap-4">
+            <span class="text-eb3 text-gray3">© {{ date('Y') }} WIN DONE TECH</span>
+            <div class="flex items-start gap-1">
+                <a href="/privacy/" class="text-eb3 text-gray3 hover:text-main2 transition-colors">隱私權聲明</a>
+                <span class="text-eb3 text-gray3" aria-hidden="true">｜</span>
+                <a href="/terms/" class="text-eb3 text-gray3 hover:text-main2 transition-colors">服務條款</a>
+            </div>
+        </div>
+
+        {{-- 回到頂部：右側邊距正中 --}}
+        <button
+            type="button"
+            id="back-to-top"
+            class="footer-back-top"
+            aria-label="回到頂部"
+        >
+            <i data-lucide="chevron-up" class="w-4 h-4"></i>
+            <span class="w-px h-8 bg-current" aria-hidden="true"></span>
+            <span class="text-cb3 leading-4 text-center">回<br>到<br>頂<br>部</span>
+        </button>
     </div>
 </footer>

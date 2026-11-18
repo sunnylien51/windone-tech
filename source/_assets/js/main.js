@@ -84,7 +84,7 @@ function closeMobileMenu() {
         return;
     }
 
-    navMenu.classList.add('translate-x-full');
+    navMenu.classList.add('translate-x-full', 'opacity-0');
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.add('hidden');
     }
@@ -97,7 +97,7 @@ function openMobileMenu() {
         return;
     }
 
-    navMenu.classList.remove('translate-x-full');
+    navMenu.classList.remove('translate-x-full', 'opacity-0');
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.remove('hidden');
     }
@@ -149,7 +149,7 @@ function moveNavTrackerTo(el) {
     navTrackList.classList.add('is-tracking');
 }
 
-// 對齊 TLC：非 hover 時收起 tracker；目前頁面僅用文字色標示 active
+// 對齊 TLC：非 hover 時收起 tracker
 function hideNavTracker() {
     if (!navTrackList || !navTracker) {
         return;
@@ -621,7 +621,7 @@ if (productSwiperEl && typeof Swiper !== 'undefined') {
         watchOverflow: true,
         breakpoints: {
             800: {
-                slidesPerView: 2.4,
+                slidesPerView: 3.25,
                 spaceBetween: 20,
             },
             1200: {
@@ -643,4 +643,63 @@ if (productSwiperEl && typeof Swiper !== 'undefined') {
             },
         },
     });
+}
+
+/* ---------- Home partners slider（全斷點單列） ---------- */
+const partnerSwiperEl = document.getElementById('partner-swiper');
+if (partnerSwiperEl && typeof Swiper !== 'undefined') {
+    const reduceMotionPartners = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    new Swiper(partnerSwiperEl, {
+        slidesPerView: 2.25,
+        spaceBetween: 0,
+        speed: reduceMotionPartners ? 0 : 500,
+        grabCursor: true,
+        simulateTouch: true,
+        allowTouchMove: true,
+        watchOverflow: true,
+        breakpoints: {
+            768: {
+                slidesPerView: 3.5,
+            },
+            1024: {
+                slidesPerView: 4,
+            },
+            1280: {
+                slidesPerView: 6,
+            },
+        },
+    });
+}
+
+/* ---------- Data panel：底圖視差（滾得比內容慢） ---------- */
+const dataPanel = document.querySelector('.data-panel');
+const dataPanelBg = dataPanel && dataPanel.querySelector('.data-panel-bg');
+if (dataPanel && dataPanelBg && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // 0～1：越小底圖動得越慢
+    const DATA_PARALLAX = 0.28;
+    // 須對齊 CSS：.data-panel-bg top -50% / height 200% → 理論可動 50%；留一點安全邊
+    const DATA_PARALLAX_MAX_RATIO = 0.45;
+
+    const updateDataParallax = () => {
+        const rect = dataPanel.getBoundingClientRect();
+        const viewH = window.innerHeight || 1;
+        if (rect.bottom < -80 || rect.top > viewH + 80) {
+            return;
+        }
+        const panelH = rect.height || 1;
+        const maxShift = panelH * DATA_PARALLAX_MAX_RATIO;
+        // 面板中心相對視窗中心的位移 × 係數；clamp 避免超出底圖層而露 gray5
+        const centerDelta = rect.top + panelH / 2 - viewH / 2;
+        const y = Math.max(-maxShift, Math.min(maxShift, centerDelta * DATA_PARALLAX));
+        dataPanelBg.style.transform = `translate3d(0, ${y}px, 0)`;
+    };
+
+    if (window.lenis) {
+        window.lenis.on('scroll', updateDataParallax);
+    } else {
+        window.addEventListener('scroll', updateDataParallax, { passive: true });
+    }
+    window.addEventListener('resize', updateDataParallax, { passive: true });
+    updateDataParallax();
 }

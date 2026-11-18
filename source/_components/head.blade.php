@@ -26,8 +26,11 @@
 <meta property="og:description" content="{{ $pageDescription }}">
 <meta name="twitter:card" content="summary_large_image">
 
-<link rel="icon" type="image/png" href="/images/favicon.png">
-<link rel="apple-touch-icon" href="/images/favicon.png">
+{{-- favicon.ico 實際為 PNG；優先宣告 image/png，避免 Chrome 當 x-icon 解失敗 --}}
+<link rel="icon" type="image/png" href="/favicon.png?v=3" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon.png?v=3" sizes="32x32">
+<link rel="shortcut icon" type="image/png" href="/favicon.png?v=3">
+<link rel="apple-touch-icon" href="/images/favicon.png?v=3">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
