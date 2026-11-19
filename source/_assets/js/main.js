@@ -10,23 +10,6 @@ const swiperTrackpadWheel = {
     releaseOnEdges: true,
 };
 
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            once: true,
-        });
-    }
-
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-
-    if (typeof Fancybox !== 'undefined') {
-        Fancybox.bind('[data-fancybox]', {});
-    }
-});
-
 // Lenis 1.x：用 autoRaf；開選單時 stop()，關選單時 start()
 if (typeof Lenis !== 'undefined') {
     const lenis = new Lenis({
@@ -37,6 +20,37 @@ if (typeof Lenis !== 'undefined') {
     });
 
     window.lenis = lenis;
+}
+
+function initPageEnhancements() {
+    if (typeof AOS !== 'undefined') {
+        // offset:0 → 首屏標題／副標進頁就觸發，不用先滾一下
+        // Vite module 可能晚於 DOMContentLoaded，故用 readyState 雙路徑
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 0,
+        });
+
+        // 下一幀＋完整 load：確保首屏已在視窗內的元素立刻加上 aos-animate
+        const refreshAos = () => AOS.refresh();
+        requestAnimationFrame(refreshAos);
+        window.addEventListener('load', refreshAos, { once: true });
+    }
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    if (typeof Fancybox !== 'undefined') {
+        Fancybox.bind('[data-fancybox]', {});
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageEnhancements);
+} else {
+    initPageEnhancements();
 }
 
 const backToTopBtn = document.getElementById('back-to-top');

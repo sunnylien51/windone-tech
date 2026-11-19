@@ -101,8 +101,8 @@
             <div class="w-full max-w-[400px] flex flex-col items-start gap-6 md:gap-8">
                 {{-- AOS 以 hero 頂端為觸發點：貼近底部的按鈕才會跟標題一起出現 --}}
                 <div id="hero-copy" class="w-full flex flex-col items-start gap-2 md:gap-3">
-                    <h1 id="hero-title" class="text-ch4 md:text-ch3 text-gray5 line-clamp-1" data-aos="fade-up" data-aos-anchor="#home-hero">{{ $heroFirst['title'] }}</h1>
-                    <p id="hero-body" class="text-cb3 text-gray3 line-clamp-2" data-aos="fade-up" data-aos-delay="100" data-aos-anchor="#home-hero">{{ $heroFirst['body'] }}</p>
+                    <h1 id="hero-title" class="text-ch4 md:text-ch3 text-gray5 line-clamp-1" data-aos="fade-up" data-aos-anchor="#home-hero" data-aos-offset="0">{{ $heroFirst['title'] }}</h1>
+                    <p id="hero-body" class="text-cb3 text-gray3 line-clamp-2" data-aos="fade-up" data-aos-delay="100" data-aos-anchor="#home-hero" data-aos-offset="0">{{ $heroFirst['body'] }}</p>
                 </div>
                 <a
                     id="hero-link"
@@ -111,6 +111,7 @@
                     data-aos="fade-up"
                     data-aos-delay="200"
                     data-aos-anchor="#home-hero"
+                    data-aos-offset="0"
                 >
                     <span class="btn-dark-icon" aria-hidden="true">
                         <i data-lucide="arrow-right"></i>

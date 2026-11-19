@@ -50,10 +50,13 @@
         >
 
         <div class="layout-grid relative z-10 flex-col pt-32 md:pt-40 lg:pt-44 pb-14 md:pb-16 lg:pb-20">
+            {{-- 首屏：以 stage 頂端為觸發點，進頁即顯示 --}}
             <nav
                 aria-label="麵包屑"
                 class="inline-flex items-center overflow-hidden rounded-[20px] bg-white px-1.5 outline-inset outline-gray1 self-start"
                 data-aos="fade-up"
+                data-aos-anchor="#product-stage"
+                data-aos-offset="0"
             >
                 <a
                     href="/"
@@ -67,7 +70,12 @@
             </nav>
 
             <div class="product-stage-grid w-full mt-10 md:mt-12 lg:mt-14">
-                <div class="product-stage-copy flex flex-col items-start gap-6 md:gap-8" data-aos="fade-up">
+                <div
+                    class="product-stage-copy flex flex-col items-start gap-6 md:gap-8"
+                    data-aos="fade-up"
+                    data-aos-anchor="#product-stage"
+                    data-aos-offset="0"
+                >
                     <div class="w-full flex flex-col items-start gap-3">
                         <span class="accent-bar" aria-hidden="true"></span>
                         @if ($categoryTitle !== '')
@@ -86,7 +94,13 @@
                     </a>
                 </div>
 
-                <div class="product-stage-visual relative w-full" data-aos="fade-up" data-aos-delay="100">
+                <div
+                    class="product-stage-visual relative w-full"
+                    data-aos="fade-up"
+                    data-aos-delay="100"
+                    data-aos-anchor="#product-stage"
+                    data-aos-offset="0"
+                >
                     <div class="product-stage-shadow-tilt" aria-hidden="true">
                         <div class="product-stage-shadow">
                             <img src="{{ $image }}" alt="" class="product-stage-shadow-img" decoding="async">

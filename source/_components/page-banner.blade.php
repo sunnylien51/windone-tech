@@ -22,7 +22,7 @@
     // 依序上升：麵包屑 → 標題 → 副標 → 形象圖
     $aosImageDelay = $hasSubtitle ? 300 : 200;
 @endphp
-<section class="page-banner" aria-label="{{ $bannerTitle !== '' ? $bannerTitle : '頁面橫幅' }}">
+<section id="page-banner" class="page-banner" aria-label="{{ $bannerTitle !== '' ? $bannerTitle : '頁面橫幅' }}">
     <img
         class="page-banner-bg"
         src="/images/bg_banner.webp"
@@ -35,11 +35,13 @@
 
     <div class="layout-grid flex-col pt-32 md:pt-40 lg:pt-44{{ $hasImage ? '' : ' pb-10 md:pb-12 lg:pb-14' }}">
         <div class="w-full flex flex-col items-start gap-7">
-            {{-- 麵包屑 pill：WINDONE | 階層… --}}
+            {{-- 麵包屑／標題／副標：以 banner 頂端為觸發點，進頁即顯示（勿等滾動） --}}
             <nav
                 aria-label="麵包屑"
                 class="inline-flex items-center overflow-hidden rounded-[20px] bg-white px-1.5 outline-inset outline-gray1"
                 data-aos="fade-up"
+                data-aos-anchor="#page-banner"
+                data-aos-offset="0"
             >
                 <a
                     href="/"
@@ -66,9 +68,21 @@
             </nav>
 
             <div class="w-full flex flex-col items-start gap-3">
-                <h1 class="w-full text-eh1 uppercase text-gray5" data-aos="fade-up" data-aos-delay="100">{{ $bannerTitle }}</h1>
+                <h1
+                    class="w-full text-eh1 uppercase text-gray5"
+                    data-aos="fade-up"
+                    data-aos-delay="100"
+                    data-aos-anchor="#page-banner"
+                    data-aos-offset="0"
+                >{{ $bannerTitle }}</h1>
                 @if ($hasSubtitle)
-                    <p class="w-full max-w-[600px] text-cb2 text-gray3" data-aos="fade-up" data-aos-delay="200">{{ $bannerSubtitle }}</p>
+                    <p
+                        class="w-full max-w-[600px] text-cb2 text-gray3"
+                        data-aos="fade-up"
+                        data-aos-delay="200"
+                        data-aos-anchor="#page-banner"
+                        data-aos-offset="0"
+                    >{{ $bannerSubtitle }}</p>
                 @endif
             </div>
         </div>
@@ -81,6 +95,8 @@
             class="page-banner-media w-full px-6 md:px-12 mt-10 md:mt-12 lg:mt-14 pb-10 md:pb-12 lg:pb-14"
             data-aos="fade-up"
             data-aos-delay="{{ $aosImageDelay }}"
+            data-aos-anchor="#page-banner"
+            data-aos-offset="0"
         >
             <div class="page-banner-media-frame">
                 <div class="page-banner-media-parallax">
