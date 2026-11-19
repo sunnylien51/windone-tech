@@ -1413,6 +1413,24 @@
         pointer-events: auto;
     }
 
+    /* Swiper 尚未 init：先亮第一張，避免等 JS 才從 opacity:0 露出（傷 LCP） */
+    .hero-swiper:not(.swiper-initialized) .swiper-slide:first-child .hero-motion {
+        translate: 0 0;
+        scale: 1;
+        opacity: 1;
+        transition: none;
+    }
+
+    /* 產品圖：載完後極短淡入（約 0.2s）；勿長時間藏圖 */
+    .hero-visual-img {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .hero-visual-img.is-ready {
+        opacity: 1;
+    }
+
     /* 第 1 層 motion：右進左出 + 縮放淡入淡出（只動 translate / scale / opacity，GPU 合成）
        - 新產品：從右側（稍小 0.85）滑入並放大到原尺寸，同時淡入
        - 舊產品：往左側滑出並縮小（0.85），同時淡出
@@ -1530,6 +1548,11 @@
             translate: none !important;
             scale: none !important;
             opacity: 1 !important;
+            transition: none;
+        }
+
+        .hero-visual-img {
+            opacity: 1;
             transition: none;
         }
 

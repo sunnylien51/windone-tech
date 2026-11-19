@@ -8,13 +8,13 @@
      ★ SECTION · Footer - 頁尾
      ---------------------------------------------------------------------- --}}
 <footer class="site-footer w-full mt-auto">
-    <div class="relative px-6 md:px-12 lg:px-20 pt-20 pb-8 flex flex-col items-center gap-8">
+    <div class="relative px-6 md:px-12 lg:px-20 pt-10 md:pt-20 pb-8 flex flex-col items-center gap-8">
         {{-- 主卡片：聯絡 CTA + ACCESS／MENU --}}
-        <div class="w-full p-5 bg-white/80 rounded-[36px] shadow-[0px_0px_26px_0px_rgba(0,0,0,0.05)] flex flex-col lg:flex-row justify-start items-stretch gap-10 lg:gap-24 overflow-hidden">
+        <div class="w-full p-3 md:p-5 bg-white/80 rounded-[24px] md:rounded-[36px] shadow-[0px_0px_26px_0px_rgba(0,0,0,0.05)] flex flex-col lg:flex-row justify-start items-stretch gap-8 lg:gap-24 overflow-hidden">
             {{-- Get in Touch --}}
             <a
                 href="/contact/"
-                class="footer-touch relative w-full lg:w-[500px] h-56 md:h-72 shrink-0 bg-gray5 rounded-tl-3xl rounded-tr-3xl rounded-bl-3xl flex flex-col justify-between items-end overflow-hidden"
+                class="footer-touch relative w-full lg:w-[500px] h-56 md:h-72 shrink-0 bg-gray5 rounded-[20px] md:rounded-[30px] flex flex-col justify-between items-end overflow-hidden"
                 aria-label="聯絡我們"
             >
                 <img
@@ -47,7 +47,7 @@
             </a>
 
             {{-- ACCESS + MENU --}}
-            <div class="flex-1 self-stretch py-4 pr-0 lg:pr-2.5 flex flex-col justify-between overflow-hidden">
+            <div class="flex-1 self-stretch py-4 px-4 flex flex-col justify-between overflow-hidden">
                 <div class="w-full flex flex-col md:flex-row justify-between items-start gap-10 md:gap-8 overflow-hidden">
                     <div class="w-full md:w-72 flex flex-col items-start gap-3">
                         <span class="text-eb3 text-gray2">ACCESS</span>

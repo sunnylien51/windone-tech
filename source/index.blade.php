@@ -2,11 +2,22 @@
 
 @section('bodyClass', 'bg-dot')
 
-@section('body')
 @php
     $heroSlides = $page->heroSlides ?? [];
     $heroCount = max(count($heroSlides), 1);
-    $heroFirst = $heroSlides[0] ?? ['title' => '', 'body' => '', 'link' => '#'];
+    $heroFirst = $heroSlides[0] ?? ['title' => '', 'body' => '', 'link' => '#', 'image' => ''];
+    $heroFirstImage = $heroFirst['image'] ?? '';
+@endphp
+
+{{-- 第一張 hero 圖提早下載，縮短 LCP／空白時間 --}}
+@if ($heroFirstImage !== '')
+@push('head')
+<link rel="preload" as="image" href="{{ $heroFirstImage }}" fetchpriority="high">
+@endpush
+@endif
+
+@section('body')
+@php
     $productCards = $page->asArray($page->productCards ?? []);
     $valueCards = $page->asArray($page->valueCards ?? []);
     $dataPanel = $page->asArray($page->dataPanel ?? []);
@@ -69,10 +80,16 @@
                                      shadow  = 動態陰影（獨立一層，隨漂浮拉遠／變淡，隨傾斜位移）
                                      float   = 上下漂浮
                                      tilt    = 3D 傾斜（跟隨滑鼠） --}}
-                                <div class="hero-motion relative w-full">
+                                <div class="hero-motion relative w-[90%] mx-auto md:w-[80%]">
                                     <div class="hero-shadow-tilt" aria-hidden="true">
                                         <div class="hero-shadow">
-                                            <img src="{{ $slide['image'] }}" alt="" class="hero-shadow-img" decoding="async">
+                                            <img
+                                                src="{{ $slide['image'] }}"
+                                                alt=""
+                                                class="hero-shadow-img"
+                                                decoding="async"
+                                                @if ($loop->first) fetchpriority="low" @else loading="lazy" @endif
+                                            >
                                         </div>
                                     </div>
                                     <div class="hero-float relative w-full">
@@ -80,11 +97,16 @@
                                             <img
                                                 src="{{ $slide['image'] }}"
                                                 alt="{{ $slide['title'] }}"
-                                                class="hero-visual-img w-full h-auto max-h-[min(60svh,620px)] object-contain"
+                                                class="hero-visual-img w-full h-auto md:max-h-[min(60svh,620px)] object-contain"
                                                 width="800"
                                                 height="550"
                                                 decoding="async"
-                                                @if ($loop->first) fetchpriority="high" @endif
+                                                @if ($loop->first)
+                                                    fetchpriority="high"
+                                                @else
+                                                    loading="lazy"
+                                                @endif
+                                                onload="this.classList.add('is-ready')"
                                             >
                                         </div>
                                     </div>
@@ -94,6 +116,14 @@
                     </div>
                 </div>
             </div>
+            {{-- 快取命中時 onload 可能已過：補上 is-ready，避免圖一直透明 --}}
+            <script>
+                document.querySelectorAll('#home-hero .hero-visual-img').forEach(function (img) {
+                    if (img.complete && img.naturalWidth > 0) {
+                        img.classList.add('is-ready');
+                    }
+                });
+            </script>
         </div>
 
         {{-- 下：文案 + Read more；頁數改絕對定位，底邊對齊 64px --}}
