@@ -31,7 +31,7 @@
     tabindex="0"
     data-hero-pause-on-hover="false"
 >
-    <div class="layout-grid h-full flex-col pt-32 lg:pt-[160px] pb-20 md:pb-14 lg:pb-16 overflow-visible">
+    <div class="layout-grid h-full flex-col pt-32 lg:pt-[160px] pb-12 md:pb-14 lg:pb-16 overflow-visible">
         {{-- 上：品牌字 + 產品圖（吃掉剩餘高度） --}}
         <div class="hero-stage relative w-full flex-1 min-h-0 overflow-visible">
             {{-- 背景英文：寬度 = 版面內容寬（layout-grid），白色漸層；textLength 讓字距自動撐滿 --}}
