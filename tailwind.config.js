@@ -33,9 +33,10 @@ export default {
                 bg: '#F0F2F8',
             },
             fontFamily: {
-                sans: ['Noto Sans TC', 'sans-serif'],
-                outfit: ['Outfit', 'sans-serif'],
-                display: ['Tenor Sans', 'sans-serif'],
+                // 對應 main.css：內容字隨 lang；Latin 品牌字固定
+                sans: ['var(--font-content)', 'sans-serif'],
+                outfit: ['var(--font-latin-body)', 'sans-serif'],
+                display: ['var(--font-latin-display)', 'sans-serif'],
             },
         },
     },

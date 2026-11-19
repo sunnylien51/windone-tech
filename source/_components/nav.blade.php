@@ -33,11 +33,16 @@
             <ul id="nav-track-list" class="nav-track-list relative flex items-center gap-0.5">
                 <span class="nav-tracker" aria-hidden="true"></span>
                 @foreach ($navItems as $item)
+                    @php
+                        $itemLabels = $item['labels'] ?? ['zh-Hant' => $item['label']];
+                    @endphp
                     <li class="relative z-10">
                         <a
                             href="{{ $item['path'] }}/"
                             class="nav-item text-cb2 text-gray5 h-10 px-4 rounded-full inline-flex items-center justify-center {{ $page->isActive($item['path']) }}"
-                        >{{ $item['label'] }}</a>
+                            data-i18n-nav
+                            data-labels="{{ json_encode($itemLabels, JSON_UNESCAPED_UNICODE) }}"
+                        >{{ $itemLabels[$currentLang['code']] ?? $item['label'] }}</a>
                     </li>
                 @endforeach
             </ul>
@@ -96,11 +101,16 @@
         >
             <ul class="flex flex-col gap-1 w-full">
                 @foreach ($navItems as $item)
+                    @php
+                        $itemLabels = $item['labels'] ?? ['zh-Hant' => $item['label']];
+                    @endphp
                     <li>
                         <a
                             href="{{ $item['path'] }}/"
                             class="nav-item-mobile text-cb2 text-gray5 flex w-full items-center rounded-[16px] px-4 py-3 transition-colors duration-300 hover:bg-bg/80 {{ $page->isActive($item['path']) }}"
-                        >{{ $item['label'] }}</a>
+                            data-i18n-nav
+                            data-labels="{{ json_encode($itemLabels, JSON_UNESCAPED_UNICODE) }}"
+                        >{{ $itemLabels[$currentLang['code']] ?? $item['label'] }}</a>
                     </li>
                 @endforeach
             </ul>

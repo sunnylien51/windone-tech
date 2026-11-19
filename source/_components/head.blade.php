@@ -32,9 +32,24 @@
 <link rel="shortcut icon" type="image/png" href="/favicon.png?v=3">
 <link rel="apple-touch-icon" href="/images/favicon.png?v=3">
 
+@php
+    // 字型：Latin（Outfit／Tenor）每語系都載；CJK 只載當前語系，避免 TC＋JP 雙份
+    $pageLang = $page->language ?? 'zh-Hant';
+    $cjkFamily = 'Noto+Sans+TC:wght@500;700';
+    if ($pageLang === 'ja' || str_starts_with($pageLang, 'ja')) {
+        $cjkFamily = 'Noto+Sans+JP:wght@500;700';
+    } elseif ($pageLang === 'zh-Hans' || $pageLang === 'zh-CN') {
+        $cjkFamily = 'Noto+Sans+SC:wght@500;700';
+    } elseif ($pageLang === 'en' || str_starts_with($pageLang, 'en')) {
+        $cjkFamily = null; // 英文頁內容走 Outfit，不另載 CJK
+    }
+    $googleFontsHref = $cjkFamily
+        ? 'https://fonts.googleapis.com/css2?family=' . $cjkFamily . '&family=Outfit:wght@400&family=Tenor+Sans&display=swap'
+        : 'https://fonts.googleapis.com/css2?family=Outfit:wght@400&family=Tenor+Sans&display=swap';
+@endphp
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700&family=Outfit:wght@400&family=Tenor+Sans&display=swap" rel="stylesheet">
+<link href="{{ $googleFontsHref }}" rel="stylesheet">
 
 <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 @if ($useSwiper)

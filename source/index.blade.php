@@ -98,15 +98,19 @@
 
         {{-- 下：文案 + Read more；頁數改絕對定位，底邊對齊 64px --}}
         <div class="hero-footer relative z-10 w-full shrink-0 h-[17.5rem] md:h-[15rem] pt-4 md:pt-6 flex flex-col justify-end">
-            <div class="hero-enter w-full max-w-[400px] flex flex-col items-start gap-6 md:gap-8">
-                <div id="hero-copy" class="hero-copy-fade w-full flex flex-col items-start gap-2 md:gap-3">
-                    <h1 id="hero-title" class="text-ch4 md:text-ch3 text-gray5 line-clamp-1">{{ $heroFirst['title'] }}</h1>
-                    <p id="hero-body" class="text-cb3 text-gray3 line-clamp-2">{{ $heroFirst['body'] }}</p>
+            <div class="w-full max-w-[400px] flex flex-col items-start gap-6 md:gap-8">
+                {{-- AOS 以 hero 頂端為觸發點：貼近底部的按鈕才會跟標題一起出現 --}}
+                <div id="hero-copy" class="w-full flex flex-col items-start gap-2 md:gap-3">
+                    <h1 id="hero-title" class="text-ch4 md:text-ch3 text-gray5 line-clamp-1" data-aos="fade-up" data-aos-anchor="#home-hero">{{ $heroFirst['title'] }}</h1>
+                    <p id="hero-body" class="text-cb3 text-gray3 line-clamp-2" data-aos="fade-up" data-aos-delay="100" data-aos-anchor="#home-hero">{{ $heroFirst['body'] }}</p>
                 </div>
                 <a
                     id="hero-link"
                     href="{{ $heroFirst['link'] }}"
                     class="btn-dark"
+                    data-aos="fade-up"
+                    data-aos-delay="200"
+                    data-aos-anchor="#home-hero"
                 >
                     <span class="btn-dark-icon" aria-hidden="true">
                         <i data-lucide="arrow-right"></i>
@@ -118,7 +122,7 @@
     </div>
 
     {{-- 頁數：手機靠右下避開 Read more；md+ 右 80px／底 64px --}}
-    <div class="pager hero-pager hero-enter hero-enter-delay" role="group" aria-label="主視覺頁數">
+    <div class="pager hero-pager" role="group" aria-label="主視覺頁數">
         <p class="pager-label tabular-nums" aria-live="polite">
             <span id="hero-current">01</span> / <span>{{ str_pad((string) $heroCount, 2, '0', STR_PAD_LEFT) }}</span>
         </p>

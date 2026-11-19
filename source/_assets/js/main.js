@@ -1,6 +1,15 @@
 // 與 tailwind.config.js 的 screens.lg 一致
 const LG_BREAKPOINT = 1200;
 
+/* Mac 觸控板左右滑：Swiper mousewheel + 只吃橫向（縱向仍交給頁面／Lenis） */
+const swiperTrackpadWheel = {
+    enabled: true,
+    forceToAxis: true,
+    sensitivity: 1,
+    thresholdDelta: 8,
+    releaseOnEdges: true,
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof AOS !== 'undefined') {
         AOS.init({
@@ -209,6 +218,29 @@ if (langBtn && langMenu) {
     });
 }
 
+function applyNavLang(lang) {
+    document.querySelectorAll('[data-i18n-nav]').forEach((el) => {
+        let labels = {};
+        try {
+            labels = JSON.parse(el.getAttribute('data-labels') || '{}');
+        } catch (e) {
+            return;
+        }
+        const text = labels[lang];
+        if (text) {
+            el.textContent = text;
+        }
+    });
+}
+
+/** 切語系時更新 html lang，讓 :lang(...) 字型變數生效（示意） */
+function applyDocumentLang(lang) {
+    if (!lang) {
+        return;
+    }
+    document.documentElement.setAttribute('lang', lang);
+}
+
 document.querySelectorAll('.lang-option').forEach((option) => {
     option.addEventListener('click', function () {
         const lang = this.getAttribute('data-lang');
@@ -221,6 +253,10 @@ document.querySelectorAll('.lang-option').forEach((option) => {
         if (langLabel && label) {
             langLabel.textContent = label;
         }
+        if (lang) {
+            applyDocumentLang(lang);
+            applyNavLang(lang);
+        }
         closeLangMenu();
     });
 });
@@ -229,7 +265,6 @@ document.querySelectorAll('.lang-option').forEach((option) => {
 const heroSwiperEl = document.getElementById('hero-swiper');
 if (heroSwiperEl && typeof Swiper !== 'undefined') {
     const heroSection = document.getElementById('home-hero');
-    const heroCopy = document.getElementById('hero-copy');
     const heroTitle = document.getElementById('hero-title');
     const heroBody = document.getElementById('hero-body');
     const heroLink = document.getElementById('hero-link');
@@ -252,7 +287,7 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         return Boolean(
             target?.closest?.(
                 // 左側文案／Read more／頁數：等同離開 hero，整顆關掉自訂游標、不觸發換頁
-                '.hero-footer .hero-enter, .hero-pager, a, button, input, textarea, select, label'
+                '.hero-footer, .hero-pager, a, button, input, textarea, select, label'
             )
         );
     }
@@ -286,24 +321,14 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         });
     }
 
-    function syncHeroCopy(swiper, animate) {
+    function syncHeroCopy(swiper) {
         const slide = swiper.slides[swiper.activeIndex];
         if (!slide) {
             return;
         }
 
         syncHeroPager(swiper);
-
-        if (!animate || reduceMotion || !heroCopy) {
-            applyHeroCopy(slide);
-            return;
-        }
-
-        heroCopy.classList.add('is-leaving');
-        window.setTimeout(() => {
-            applyHeroCopy(slide);
-            heroCopy.classList.remove('is-leaving');
-        }, 220);
+        applyHeroCopy(slide);
     }
 
     function setCursorProgress(fraction) {
@@ -330,6 +355,7 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         // 用 fade 讓同時只有一張可見；進出場的右進左出＋縮放淡入淡出交給 CSS 的 .hero-motion
         effect: 'fade',
         fadeEffect: { crossFade: true },
+        mousewheel: swiperTrackpadWheel,
         autoplay: reduceMotion
             ? false
             : {
@@ -339,16 +365,11 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
               },
         on: {
             init(swiper) {
-                syncHeroCopy(swiper, false);
+                syncHeroCopy(swiper);
                 syncCursorSlideProgress(swiper);
-                if (heroSection) {
-                    requestAnimationFrame(() => {
-                        heroSection.classList.add('is-ready');
-                    });
-                }
             },
             slideChange(swiper) {
-                syncHeroCopy(swiper, true);
+                syncHeroCopy(swiper);
                 syncCursorSlideProgress(swiper);
             },
         },
@@ -619,6 +640,7 @@ if (productSwiperEl && typeof Swiper !== 'undefined') {
         spaceBetween: 16,
         speed: reduceMotionProducts ? 0 : 600,
         watchOverflow: true,
+        mousewheel: swiperTrackpadWheel,
         breakpoints: {
             800: {
                 slidesPerView: 3.25,
@@ -658,6 +680,7 @@ if (partnerSwiperEl && typeof Swiper !== 'undefined') {
         simulateTouch: true,
         allowTouchMove: true,
         watchOverflow: true,
+        mousewheel: swiperTrackpadWheel,
         breakpoints: {
             768: {
                 slidesPerView: 3.5,
@@ -702,4 +725,157 @@ if (dataPanel && dataPanelBg && !window.matchMedia('(prefers-reduced-motion: red
     }
     window.addEventListener('resize', updateDataParallax, { passive: true });
     updateDataParallax();
+}
+
+/* ---------- 產品內頁舞台：輕量 3D 傾斜（沿用首頁語彙，無 Swiper） ---------- */
+const productStage = document.getElementById('product-stage');
+if (productStage) {
+    const canHoverStage = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const reduceMotionStage = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (canHoverStage && !reduceMotionStage) {
+        const MAX_TILT = 7;
+        const EASE = 0.08;
+        const SHADOW_BASE = 28;
+        const tiltEl = productStage.querySelector('.product-stage-tilt');
+        const shadowEl = productStage.querySelector('.product-stage-shadow-tilt');
+        let targetX = 0;
+        let targetY = 0;
+        let curX = 0;
+        let curY = 0;
+        let rafId = null;
+
+        const applyTilt = (x, y) => {
+            if (tiltEl) {
+                tiltEl.style.transform = `perspective(1100px) rotateX(${x.toFixed(2)}deg) rotateY(${y.toFixed(2)}deg)`;
+            }
+            if (shadowEl) {
+                shadowEl.style.transform = `translate3d(${(SHADOW_BASE - y * 1.5).toFixed(1)}px, ${(SHADOW_BASE + x * 1.5).toFixed(1)}px, 0)`;
+            }
+        };
+
+        const tick = () => {
+            curX += (targetX - curX) * EASE;
+            curY += (targetY - curY) * EASE;
+
+            if (Math.abs(targetX - curX) > 0.01 || Math.abs(targetY - curY) > 0.01) {
+                applyTilt(curX, curY);
+                rafId = requestAnimationFrame(tick);
+            } else {
+                curX = targetX;
+                curY = targetY;
+                applyTilt(curX, curY);
+                rafId = null;
+            }
+        };
+
+        const kick = () => {
+            if (rafId === null) {
+                rafId = requestAnimationFrame(tick);
+            }
+        };
+
+        productStage.addEventListener('mousemove', (e) => {
+            const rect = productStage.getBoundingClientRect();
+            const nx = (e.clientX - rect.left) / rect.width - 0.5;
+            const ny = (e.clientY - rect.top) / rect.height - 0.5;
+            targetY = nx * 2 * MAX_TILT;
+            targetX = -ny * 2 * MAX_TILT;
+            kick();
+        });
+
+        productStage.addEventListener('mouseleave', () => {
+            targetX = 0;
+            targetY = 0;
+            kick();
+        });
+    }
+}
+
+/* ---------- 產品介紹：分類選單＋列表篩選＋橫滑提示 ---------- */
+const productCatNav = document.getElementById('product-categories');
+if (productCatNav) {
+    const catTabs = Array.from(productCatNav.querySelectorAll('[data-product-cat]'));
+    const productGroups = Array.from(document.querySelectorAll('[data-product-group]'));
+    const productCatWrap = productCatNav.closest('.product-cat-nav-wrap');
+
+    const updateProductCatScrollHint = () => {
+        if (!productCatWrap) {
+            return;
+        }
+        const maxScroll = productCatNav.scrollWidth - productCatNav.clientWidth;
+        const left = productCatNav.scrollLeft;
+        const canScroll = maxScroll > 2;
+        productCatWrap.classList.toggle('can-scroll-left', canScroll && left > 2);
+        productCatWrap.classList.toggle('can-scroll-right', canScroll && left < maxScroll - 2);
+    };
+
+    const filterProductGroups = (slug) => {
+        const showAll = !slug || slug === 'all';
+        let firstVisible = null;
+        productGroups.forEach((group) => {
+            const match = showAll || group.getAttribute('data-product-group') === slug;
+            group.classList.toggle('is-hidden', !match);
+            if (match && !firstVisible) {
+                firstVisible = group;
+            }
+        });
+        return firstVisible;
+    };
+
+    const setActiveCat = (activeBtn) => {
+        catTabs.forEach((btn) => {
+            const on = btn === activeBtn;
+            btn.classList.toggle('is-active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+    };
+
+    catTabs.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const slug = btn.getAttribute('data-product-cat') || '';
+            setActiveCat(btn);
+            const firstVisible = filterProductGroups(slug);
+            if (firstVisible && slug !== 'all') {
+                firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    productCatNav.addEventListener('scroll', updateProductCatScrollHint, { passive: true });
+    window.addEventListener('resize', updateProductCatScrollHint, { passive: true });
+    updateProductCatScrollHint();
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/* ---------- Page banner 形象圖：圓角框內視差（類似 TLC Healthcare） ---------- */
+const bannerMediaFrame = document.querySelector('.page-banner-media-frame');
+const bannerMediaParallax = bannerMediaFrame && bannerMediaFrame.querySelector('.page-banner-media-parallax');
+if (bannerMediaFrame && bannerMediaParallax && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // CSS：top -15% / height 130% → 可動約 15%；係數柔一點
+    const BANNER_PARALLAX = 0.22;
+    const BANNER_PARALLAX_MAX_RATIO = 0.14;
+
+    const updateBannerParallax = () => {
+        const rect = bannerMediaFrame.getBoundingClientRect();
+        const viewH = window.innerHeight || 1;
+        if (rect.bottom < -80 || rect.top > viewH + 80) {
+            return;
+        }
+        const frameH = rect.height || 1;
+        const maxShift = frameH * BANNER_PARALLAX_MAX_RATIO;
+        const centerDelta = rect.top + frameH / 2 - viewH / 2;
+        const y = Math.max(-maxShift, Math.min(maxShift, centerDelta * BANNER_PARALLAX));
+        bannerMediaParallax.style.transform = `translate3d(0, ${y}px, 0)`;
+    };
+
+    if (window.lenis) {
+        window.lenis.on('scroll', updateBannerParallax);
+    } else {
+        window.addEventListener('scroll', updateBannerParallax, { passive: true });
+    }
+    window.addEventListener('resize', updateBannerParallax, { passive: true });
+    updateBannerParallax();
 }
