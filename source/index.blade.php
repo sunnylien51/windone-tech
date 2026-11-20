@@ -266,12 +266,6 @@
 >
     <div class="layout-grid flex-col gap-8">
         <div class="values-stack">
-            {{-- 上排小字：跟疊卡一起釘住、一起離場（必須在 stack 內） --}}
-            <div class="values-label">
-                <p class="text-eb3 text-gray3">Since 1995</p>
-                <p class="text-eb3 text-gray3">Taoyuan, Taiwan</p>
-            </div>
-
             @foreach ($valueCards as $card)
                 <article class="values-card" aria-labelledby="value-title-{{ $loop->iteration }}">
                     <div class="values-card-inner">
@@ -301,11 +295,6 @@
                     </div>
                 </article>
             @endforeach
-        </div>
-
-        <div class="w-full flex justify-between items-center">
-            <p class="text-eb3 text-gray3">Quality &amp; Precision</p>
-            <p class="text-eb3 text-gray3">Professional &amp; Reliable</p>
         </div>
     </div>
 </section>

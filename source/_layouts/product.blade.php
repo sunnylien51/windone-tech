@@ -13,7 +13,6 @@
     $image = is_array($product) ? ($product['image'] ?? '/images/product1.webp') : '/images/product1.webp';
     $applications = is_array($product) ? $page->asArray($product['applications'] ?? []) : [];
     $specs = is_array($product) ? $page->asArray($product['specs'] ?? []) : [];
-    $related = $product ? $page->relatedProducts($slug, 3) : [];
     $contactHref = '/contact/?product=' . rawurlencode($title);
 
     // 適用場景併入規格重點表格（一列）
@@ -169,68 +168,6 @@
                 <span class="text-cb2 text-white">聯絡我們</span>
             </a>
         </section>
-
-        @if (count($related) > 0)
-            {{-- ----------------------------------------------------------------------
-                 ★ SECTION · Related products - 同分類產品
-                 ---------------------------------------------------------------------- --}}
-            <section
-                class="w-full flex flex-col items-start gap-8 md:gap-10"
-                aria-label="同分類產品"
-            >
-                <div class="w-full flex flex-col items-start gap-3" data-aos="fade-up">
-                    <span class="accent-bar" aria-hidden="true"></span>
-                    <h2 class="w-full text-ch3 text-gray5">同分類產品</h2>
-                </div>
-                <div class="product-catalog-grid w-full">
-                    @foreach ($related as $item)
-                        @php
-                            $itemTitle = $item['title'] ?? '';
-                            $itemBody = $item['body'] ?? '';
-                            $itemImage = $item['image'] ?? '/images/product1.webp';
-                            $itemLink = $item['link'] ?? '/products/';
-                            $itemCat = $item['categoryTitle'] ?? $categoryTitle;
-                        @endphp
-                        @if ($itemTitle === '')
-                            @continue
-                        @endif
-                        <a
-                            href="{{ $itemLink }}"
-                            class="product-card w-full"
-                            aria-label="了解{{ $itemTitle }}"
-                            data-aos="fade-up"
-                        >
-                            <div class="relative w-full pl-6 md:pl-8 pr-5 md:pr-6 pt-16 md:pt-20 lg:pt-24">
-                                <div class="w-full pb-6 md:pb-8 border-b border-gray1 flex flex-col items-start gap-1 pr-6">
-                                    <p class="text-cb3 text-main2 pl-2">{{ $itemCat }}</p>
-                                    <h3 class="text-cb1 text-gray5 line-clamp-1">{{ $itemTitle }}</h3>
-                                    @if ($itemBody !== '')
-                                        <p class="text-cb3 text-gray3 line-clamp-2">{{ $itemBody }}</p>
-                                    @endif
-                                </div>
-                                <span
-                                    class="btn-icon-solid absolute right-5 md:right-6 bottom-0 translate-y-1/2"
-                                    aria-hidden="true"
-                                >
-                                    <i data-lucide="plus"></i>
-                                </span>
-                            </div>
-                            <div class="product-card-media h-56 md:h-64 lg:h-72">
-                                <img
-                                    src="{{ $itemImage }}"
-                                    alt=""
-                                    class="w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72 object-contain"
-                                    width="288"
-                                    height="288"
-                                    loading="lazy"
-                                    decoding="async"
-                                >
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            </section>
-        @endif
     </div>
 @endif
 @endsection

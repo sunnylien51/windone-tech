@@ -14,7 +14,7 @@
      ---------------------------------------------------------------------- --}}
 <header id="main-header" class="w-full fixed top-0 left-0 z-[100] bg-transparent">
     {{-- 不用 layout-grid；手機左右 24px，平板／桌機 48px --}}
-    <nav id="main-nav" class="flex w-full px-6 md:px-12 py-6 md:py-8 justify-between items-center relative" aria-label="主選單">
+    <nav id="main-nav" class="flex w-full px-6 md:px-12 py-6 justify-between items-center relative" aria-label="主選單">
         <a href="/" class="relative z-50 shrink-0 flex items-center">
             <img src="/images/logo.svg" alt="{{ $page->siteName }}" class="h-8 md:h-9 w-auto">
         </a>

@@ -243,10 +243,10 @@
         @apply bg-main1 outline-main1;
     }
 
-    /* 企業理念：sticky 疊卡，方案 1
+    /* 企業理念：sticky 疊卡
        - 三張同高（上限稿 542；矮螢幕再縮）
        - top 遞增標題列高，上一張標題露出
-       - 不用負 margin：進區塊時先完整看到第一張，再往下叠 */
+       - 進區塊時先完整看到第一張，再往下叠 */
     .values-stack {
         --values-peek: 4rem;
         --values-base-top: 5rem;
@@ -264,34 +264,11 @@
         /* 最後一張釘在 base + 2×peek 後，再多滾這麼多才整疊離場（越大停越久） */
         --values-hold: 4rem;
 
-        /* 上排小字：高度、與第一張的間距 */
-        --values-gap: 3rem;
-        --values-label-height: 1.25rem;
-
         position: relative;
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: var(--values-gap);
-    }
-
-    /* 上排小字：釘在第一張正上方，離場時與整疊維持同樣間距
-       下限＝第一張的下限，所以 margin-bottom 要補到「第一張底邊 + 緩衝」 */
-    .values-label {
-        --values-label-offset: calc(
-            (var(--values-last-index) * var(--values-peek)) + var(--values-card-height) + var(--values-gap)
-        );
-
-        position: sticky;
-        top: calc(var(--values-base-top) - var(--values-label-height) - var(--values-gap));
-        z-index: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-shrink: 0;
-        width: 100%;
-        height: var(--values-label-height);
-        margin-bottom: var(--values-label-offset);
+        gap: 0;
     }
 
     /* sticky 只能待在父層範圍內；最後一張後面要有空間，才釘得住而不是一路蓋過去 */
@@ -326,14 +303,6 @@
         margin-top: calc(-1 * (var(--values-last-index) - var(--values-index) + 1) * var(--values-peek));
     }
 
-    /* 第一張要抵銷上排小字的 margin-bottom */
-    .values-card:first-of-type {
-        margin-top: calc(
-            -1 * ((var(--values-last-index) * var(--values-peek)) + var(--values-card-height) + var(--values-gap))
-        );
-    }
-
-    /* 小字在 stack 內，改用 nth-of-type 只算 article（卡片） */
     .values-card:nth-of-type(1) {
         --values-index: 0;
         z-index: 1;
@@ -1635,6 +1604,11 @@
             transition: none;
             transform: translate(-50%, -50%) scale(1);
         }
+    }
+
+    /* Nav pill：玻璃底 + 柔和陰影（對齊站上其他 glass 卡） */
+    .nav-pill {
+        box-shadow: 0 0 32px 0 theme('colors.gray5 / 10%');
     }
 
     /* Nav：TLC 式滑動 pill（main2/40% 底）；當前頁文字不換色，維持 gray5 */
