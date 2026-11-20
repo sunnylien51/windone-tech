@@ -20,6 +20,7 @@ const mimeTypes = {
     '.gif': 'image/gif',
     '.webp': 'image/webp',
     '.avif': 'image/avif',
+    // 真正 ICO（非 PNG 改名）
     '.ico': 'image/x-icon',
     '.mp4': 'video/mp4',
     '.webm': 'video/webm',

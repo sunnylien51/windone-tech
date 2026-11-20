@@ -2,10 +2,25 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+/* 字型：Latin 品牌固定；內容字隨 html lang 切（中／日／英）
+   text-eh*／text-eb* → latin；text-ch*／text-cb* → content
+   head 只載入當前語系 CJK，勿一次載 TC＋JP */
 :root {
-    --font-sans: 'Noto Sans TC', sans-serif;
-    --font-outfit: 'Outfit', sans-serif;
-    --font-display: 'Tenor Sans', sans-serif;
+    --font-latin-body: 'Outfit', sans-serif;
+    --font-latin-display: 'Tenor Sans', sans-serif;
+    --font-content: 'Noto Sans TC', 'Noto Sans JP', sans-serif;
+}
+
+:lang(zh-Hans) {
+    --font-content: 'Noto Sans SC', 'Noto Sans TC', sans-serif;
+}
+
+:lang(ja) {
+    --font-content: 'Noto Sans JP', 'Noto Sans TC', sans-serif;
+}
+
+:lang(en) {
+    --font-content: 'Outfit', 'Noto Sans', sans-serif;
 }
 
 @layer components {
@@ -44,7 +59,7 @@
     .btn-dark .btn-dark-icon [data-lucide] {
         width: 1rem;
         height: 1rem;
-        stroke-width: 1.2;
+        stroke-width: 1.5;
     }
 
     .btn-dark:hover {
@@ -60,6 +75,12 @@
     .btn-dark:focus-visible {
         outline: 2px solid theme('colors.main2');
         outline-offset: 2px;
+    }
+
+    /* 主選單旁：高度對齊 nav-pill（p-2 + h-10） */
+    #main-nav .btn-dark {
+        height: 3.25rem;
+        width: 9rem;
     }
 
     .btn-icon-solid {
@@ -105,16 +126,657 @@
         @apply outline outline-1 outline-offset-[-1px];
     }
 
+    /* ================= FORMS（整站共用）=================
+       form-field   label＋欄位直排
+       form-control input／select／textarea；gray1 內框，focus 變 main2 */
+    .form-field {
+        @apply flex w-full flex-col items-start gap-2;
+    }
+
+    .form-label {
+        @apply text-cb3 text-gray5;
+    }
+
+    .form-control {
+        @apply block w-full rounded-lg bg-white px-4 py-3 text-cb2 text-gray5 outline-inset outline-gray1 placeholder:text-gray3;
+        transition: outline-color 0.25s ease;
+    }
+
+    .form-control:hover {
+        @apply outline-gray2;
+    }
+
+    .form-control:focus {
+        @apply outline-main2;
+    }
+
+    textarea.form-control {
+        @apply h-36 resize-y p-4;
+    }
+
+    /* 下拉：隱藏原生箭頭，改用 .form-select-icon；未選時字色同 placeholder */
+    .form-select {
+        @apply relative w-full;
+    }
+
+    .form-select .form-control {
+        @apply cursor-pointer appearance-none p-4 pr-12;
+    }
+
+    .form-select .form-control:invalid {
+        @apply text-gray3;
+    }
+
+    .form-select-icon {
+        @apply pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray3;
+    }
+
     .footer-link {
-        @apply text-main1 text-cb2 transition-colors hover:text-main2;
+        @apply text-gray3 text-cb2 transition-colors hover:text-main2;
+    }
+
+    /* 頁尾底：bg_main；上方圓角 40px（與 home-top 對稱） */
+    .site-footer {
+        position: relative;
+        background-color: #edeff5;
+        border-top-left-radius: 40px;
+        border-top-right-radius: 40px;
+        overflow: hidden;
+    }
+
+    .site-footer::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image: url('/images/bg_main.webp');
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: cover;
+    }
+
+    .site-footer > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 回到頂部：置於 layout-grid 右側 padding 正中（lg: 4.5rem） */
+    .footer-back-top {
+        position: absolute;
+        top: 50%;
+        right: 0;
+        z-index: 2;
+        display: none;
+        width: 80px;
+        transform: translateY(-50%);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.625rem; /* gap-2.5 */
+        color: theme('colors.gray3');
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .footer-back-top:hover {
+        color: theme('colors.main2');
+    }
+
+    @screen lg {
+        .footer-back-top {
+            display: flex;
+        }
+    }
+
+    /* Footer Get in Touch：圓鈕略大（48px）；滑過整卡＝按鈕 hover 變色 */
+    .footer-touch .btn-icon-solid {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .footer-touch .btn-icon-solid::before {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .footer-touch .btn-icon-solid [data-lucide] {
+        width: 1.375rem;
+        height: 1.375rem;
+    }
+
+    .footer-touch:hover .btn-icon-solid {
+        @apply bg-main1 outline-main1;
+    }
+
+    /* 企業理念：sticky 疊卡
+       - 三張同高（上限稿 542；矮螢幕再縮）
+       - top 遞增標題列高，上一張標題露出
+       - 進區塊時先完整看到第一張，再往下叠 */
+    .values-stack {
+        --values-peek: 4rem;
+        --values-base-top: 5rem;
+        --values-safe-bottom: 1.5rem;
+        --values-max-height: 24rem;
+        --values-last-index: 2;
+        --values-card-height: min(
+            var(--values-max-height),
+            calc(
+                100svh - var(--values-base-top) - (var(--values-last-index) * var(--values-peek)) -
+                    var(--values-safe-bottom)
+            )
+        );
+
+        /* 最後一張釘在 base + 2×peek 後，再多滾這麼多才整疊離場（越大停越久） */
+        --values-hold: 4rem;
+
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+
+    /* sticky 只能待在父層範圍內；最後一張後面要有空間，才釘得住而不是一路蓋過去 */
+    .values-stack::after {
+        content: '';
+        display: block;
+        flex-shrink: 0;
+        height: var(--values-hold);
+        pointer-events: none;
+    }
+
+    .values-card {
+        --values-index: 0;
+
+        position: sticky;
+        top: calc(var(--values-base-top) + (var(--values-index) * var(--values-peek)));
+        z-index: 1;
+        width: 100%;
+        height: var(--values-card-height);
+        border-radius: 2rem;
+        background-color: transparent;
+        /* rgba(14,26,43,0.10) = gray5/10；向上陰影（外層不 clip） */
+        box-shadow: 0 -15px 30px 0 theme('colors.gray5 / 10%');
+
+        /* 整疊離場時保持釘住的樣子（每張上緣差 peek），不會互相蓋住：
+           sticky 的下限是「margin 外緣不超出父層」，所以前面的卡底下多留 (last − index) × peek */
+        margin-bottom: calc((var(--values-last-index) - var(--values-index)) * var(--values-peek));
+    }
+
+    /* 上面多出來的 margin-bottom，在下一張用負 margin-top 抵銷，一般排版間距不變 */
+    .values-card:not(:first-of-type) {
+        margin-top: calc(-1 * (var(--values-last-index) - var(--values-index) + 1) * var(--values-peek));
+    }
+
+    .values-card:nth-of-type(1) {
+        --values-index: 0;
+        z-index: 1;
+    }
+
+    .values-card:nth-of-type(2) {
+        --values-index: 1;
+        z-index: 2;
+    }
+
+    .values-card:nth-of-type(3) {
+        --values-index: 2;
+        z-index: 3;
+    }
+
+    .values-card-inner {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        padding: 0 1.5rem 2.5rem;
+        border-radius: inherit;
+        overflow: hidden;
+        background-color: theme('colors.gray5');
+    }
+
+    .values-card-media {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    /* 對齊稿：slate-900/40 蓋在照片上 */
+    .values-card-scrim {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background-color: theme('colors.gray5 / 50%');
+        pointer-events: none;
+    }
+
+    .values-card-body {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+    }
+
+    .values-card-num {
+        font-family: var(--font-latin-display);
+        font-weight: 400;
+        font-size: clamp(5rem, 14vw, 10rem);
+        line-height: 0.8;
+        color: theme('colors.white / 30%');
+        flex-shrink: 0;
+        user-select: none;
+    }
+
+    @screen md {
+        .values-stack {
+            --values-peek: 5rem; /* h-20 */
+            --values-base-top: 5.5rem;
+            --values-max-height: 30rem;
+        }
+
+        .values-card {
+            border-radius: 2.5rem;
+        }
+
+        .values-card-inner {
+            padding-left: 3rem;
+            padding-right: 3rem;
+            padding-bottom: 3rem;
+        }
+    }
+
+    @screen lg {
+        .values-stack {
+            --values-peek: 5rem; /* 標題列 h-20 */
+            --values-base-top: 6.5rem;
+            --values-safe-bottom: 2rem;
+            --values-max-height: 33.875rem; /* 542px 稿高 */
+        }
+
+        .values-card {
+            border-radius: 50px;
+        }
+
+        .values-card-inner {
+            padding-left: 4rem; /* px-16 */
+            padding-right: 4rem;
+            padding-bottom: 3.5rem; /* pb-14 */
+        }
+
+        .values-card-num {
+            font-size: 10rem; /* 160px */
+            line-height: 8rem; /* 128px */
+        }
+    }
+
+    /* 首頁數據區：bg_data 底圖 + gray5/50 遮罩（稿 slate-900/50），圓角 40px
+       lg：左文案 flex-1 ＋ 兩欄各 w-96，總高 620px；以下改直排
+       底圖獨立層．data-panel-bg：加高方便視差位移，JS 用 translate3d */
+    .data-panel {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border-radius: 2.5rem; /* 40px */
+        background-color: theme('colors.gray5');
+    }
+
+    /* 上下各多 50%（height 200%）；JS 位移會 clamp 在此範圍內，避免露底 */
+    .data-panel-bg {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        top: -50%;
+        height: 200%;
+        z-index: -2;
+        pointer-events: none;
+        background-image: url('/images/bg_data.webp');
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        will-change: transform;
+        transform: translate3d(0, 0, 0);
+    }
+
+    .data-panel::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-color: theme('colors.gray5 / 50%');
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .data-panel-bg {
+            top: 0;
+            height: 100%;
+            will-change: auto;
+            transform: none !important;
+        }
+    }
+
+    /* 欄位撐滿面板（含左右圓角），大字母才能貼齊面板左右緣；
+       不要 max-width:1440，否則寬螢幕兩側會空出一截 */
+    .data-panel-inner {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    @screen lg {
+        .data-panel-inner {
+            flex-direction: row;
+            height: 620px;
+        }
+    }
+
+    .data-col {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        overflow: hidden;
+        min-height: 240px; /* 讓 flex-1 的欄位不會被內容撐高 */
+    }
+
+    /* 同一欄內的多筆數據：手機／平板左右並列，lg 直排 */
+    .data-col-stats {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1.5rem 2rem;
+        width: 100%;
+    }
+
+    @screen lg {
+        .data-col-stats {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            gap: 6rem; /* lg:gap-24 */
+            width: auto;
+        }
+    }
+
+    /* 標題上方的雙色細條：main2 ＋ gray2/60 */
+    .accent-bar {
+        display: inline-flex;
+        align-items: flex-start;
+    }
+
+    .accent-bar::before,
+    .accent-bar::after {
+        content: '';
+        display: block;
+        height: 3px;
+    }
+
+    .accent-bar::before {
+        width: 1.75rem; /* 28px */
+        border-radius: 10px 0 0 10px;
+        background-color: theme('colors.main2');
+    }
+
+    .accent-bar::after {
+        width: 2.75rem; /* 44px */
+        border-radius: 0 10px 10px 0;
+        background-color: theme('colors.gray2 / 60%');
+    }
+
+    /* 首頁 About：玻璃浮標僅桌機顯示 */
+    .about-badge {
+        display: none;
+    }
+
+    @screen lg {
+        .about-badge {
+            position: absolute;
+            left: -94px;
+            top: 487px;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1rem;
+            padding: 1.5rem 1.75rem;
+            border-radius: 30px;
+            overflow: hidden;
+            background-color: theme('colors.white / 30%');
+            -webkit-backdrop-filter: blur(12px) saturate(140%);
+            backdrop-filter: blur(12px) saturate(140%);
+            box-shadow: 0 12px 32px 0 theme('colors.gray5 / 10%');
+        }
+    }
+
+    /* 首頁 Partners：全斷點單列 slider */
+    .partner-swiper {
+        width: 100%;
+        overflow: hidden;
+        cursor: grab;
+        touch-action: pan-y;
+    }
+
+    .partner-swiper:active {
+        cursor: grabbing;
+    }
+
+    .partner-swiper .swiper-slide {
+        height: auto;
+        user-select: none;
+    }
+
+    .partner-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 3rem; /* 手機：等比 contain，格子／邊線跟著變矮 */
+        padding: 0.75rem;
+        
+        overflow: hidden;
+        border-left: 1px solid theme('colors.gray1');
+    }
+
+    .partner-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        pointer-events: none;
+        -webkit-user-drag: none;
+        filter: grayscale(100%);
+        opacity: 0.6;
+        transition:
+            filter 0.3s ease,
+            opacity 0.3s ease;
+    }
+
+    .partner-logo:hover img {
+        filter: grayscale(0%);
+        opacity: 1;
+    }
+
+    @screen lg {
+        .partner-logo {
+            height: 5rem; /* h-20 */
+            padding: 0;
+        }
+
+        .partner-logo img {
+            object-fit: cover;
+        }
+    }
+
+    /* 合作夥伴內頁：logo 牆（無邊框、2px 間距；色塊半透明 → hover 100%） */
+    .partner-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
+        width: 100%;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    @screen md {
+        .partner-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    .partner-grid-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 7rem;
+        padding: 1.5rem 1.25rem;
+        border-radius: 20px;
+        background-color: theme('colors.white / 60%');
+        -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(20px);
+        color: inherit;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .partner-grid-item:hover {
+        background-color: theme('colors.white');
+    }
+
+    .partner-grid-item:focus-visible {
+        outline: 2px solid theme('colors.main2');
+        outline-offset: 2px;
+    }
+
+    @screen md {
+        .partner-grid-item {
+            min-height: 8.5rem;
+            padding: 2rem 1.5rem;
+        }
+    }
+
+    @screen lg {
+        .partner-grid-item {
+            min-height: 9.5rem;
+            padding: 2.5rem 2rem;
+        }
+    }
+
+    .partner-grid-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 10rem;
+        height: 3rem;
+    }
+
+    @screen md {
+        .partner-grid-logo {
+            max-width: 11rem;
+            height: 3.5rem;
+        }
+    }
+
+    @screen lg {
+        .partner-grid-logo {
+            max-width: 12.5rem;
+            height: 4rem;
+        }
+    }
+
+    .partner-grid-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        filter: grayscale(100%);
+        opacity: 0.65;
+        transition:
+            filter 0.3s ease,
+            opacity 0.3s ease;
+    }
+
+    .partner-grid-item:hover .partner-grid-logo img {
+        filter: grayscale(0%);
+        opacity: 1;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .partner-grid-item,
+        .partner-grid-logo img,
+        .partner-grid-item:hover .partner-grid-logo img {
+            transition: none;
+        }
+    }
+
+    /* 裁切框：無底色，只裁字母；全斷點貼各欄右下（手機／平板／桌機） */
+    .data-col-media {
+        position: absolute;
+        right: 0;
+        left: auto;
+        bottom: 0;
+        width: 10rem; /* 手機／平板較小 */
+        height: 8rem;
+        flex-shrink: 0;
+        overflow: hidden;
+        background-color: transparent;
+        pointer-events: none;
+    }
+
+    @screen lg {
+        .data-col-media {
+            width: 16rem;
+            height: 12rem;
+        }
+    }
+
+    /* 大字母：白 10%；手機／平板較小，桌機 240px
+       超出框的部分被 .data-col-media 裁掉 */
+    .data-col-letter {
+        position: absolute;
+        right: auto;
+        left: 56px;
+        bottom: 10;
+        z-index: 1;
+        font-family: var(--font-latin-display);
+        font-weight: 400;
+        font-size: 10rem;
+        line-height: 0.75;
+        color: theme('colors.white / 10%');
+        transform: translateY(28%);
+        pointer-events: none;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    @screen lg {
+        .data-col-letter {
+            right: auto;
+            left: 105px; /* 桌機微調位置（沿用你原本設定） */
+            font-size: 15rem; /* 240px */
+        }
     }
 
     /* 首頁頂區：hero + 產品 slider 共用 bg_main；下方圓角 40px
-       不可對「整段變高的容器」直接 background-size:cover，否則底圖會被放大裁成一片淡色。
-       改用 ::before + 100% auto，視覺縮放對齊原本單屏 hero。 */
+       維護策略：::before 用 100% auto（勿改 cover，整段變高會放大裁淡）；
+       圖蓋不住的底部用 background-color 接圖底色（取樣自 bg_main 底部 ≈ #EDEFF5）。 */
     .home-top {
         position: relative;
-        background-color: #e8eef5;
+        background-color: #edeff5;
         border-bottom-left-radius: 40px;
         border-bottom-right-radius: 40px;
         overflow: hidden;
@@ -137,11 +799,100 @@
         z-index: 1;
     }
 
-    /* 產品卡：膠囊形白半透明底；滑過時 plus 鈕下方光暈擴大 */
+    /* 麵包屑 pill：長品名不折行；超過螢幕寬時橫滑（隱藏捲軸） */
+    .breadcrumb-pill {
+        @apply inline-flex max-w-full items-center self-start rounded-[20px] bg-white px-1.5 outline-inset outline-gray1;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .breadcrumb-pill::-webkit-scrollbar {
+        display: none;
+    }
+
+    .breadcrumb-pill-item {
+        @apply shrink-0 whitespace-nowrap px-2.5 py-2 md:px-4;
+    }
+
+    /* 內頁橫幅：底圖用絕對定位方圖，可延伸進下方內文；
+       裁切交給 body.is-inner .site-main（不要裁在 banner 自己身上） */
+    .page-banner {
+        position: relative;
+    }
+
+    .page-banner-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 0;
+        width: 100%;
+        height: auto;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .page-banner > *:not(.page-banner-bg) {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* 形象圖：圓角 overflow 裁切；內層加高做視差（JS 寫 transform）
+       手機：24px／4:3；平板以上：40px／1360:510 */
+    .page-banner-media-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 5 / 3;
+        overflow: hidden;
+        border-radius: 24px;
+    }
+
+    @screen md {
+        .page-banner-media-frame {
+            aspect-ratio: 1360 / 510;
+            border-radius: 40px;
+        }
+    }
+
+    .page-banner-media-parallax {
+        position: absolute;
+        inset-inline: 0;
+        top: -15%;
+        height: 130%;
+        will-change: transform;
+    }
+
+    .page-banner-media-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .page-banner-media-parallax {
+            top: 0;
+            height: 100%;
+            transform: none !important;
+        }
+    }
+
+    /* 內頁：在 footer 之上裁掉溢出底圖，避免頁尾下方出現空白可捲區 */
+    body.is-inner > .site-main {
+        overflow: clip;
+    }
+
+    /* 產品卡：整卡可點；滑過時上移 30px、光暈擴大 */
     .product-card {
-        @apply flex flex-col items-center overflow-hidden bg-white/80;
+        @apply flex flex-col items-center overflow-hidden bg-white/80 text-inherit no-underline;
         border-radius: 900px;
         box-shadow: 10px 20px 50px 0 rgba(0, 0, 0, 0.03);
+        transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .product-card:hover {
+        transform: translateY(-30px);
     }
 
     .product-card:hover .btn-icon-solid::before {
@@ -153,7 +904,324 @@
         min-height: 14rem;
     }
 
-    /* 產品圖為方圖＋實底，勿加 box-shadow（會在右側出現一塊怪陰影）；光影吃圖檔本身 */
+    /* 產品介紹內頁：分類選單（底線 tab，非整站 btn）
+       整排底線用 ::after 實心畫在 ul；隱藏原生滾軸，右側淡出提示可橫滑 */
+    .product-cat-nav-wrap {
+        position: relative;
+        width: 100%;
+    }
+
+    .product-cat-nav-wrap::before,
+    .product-cat-nav-wrap::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2.75rem;
+        z-index: 2;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .product-cat-nav-wrap::before {
+        left: 0;
+        background: linear-gradient(to right, theme('colors.bg'), transparent);
+    }
+
+    .product-cat-nav-wrap::after {
+        right: 0;
+        background: linear-gradient(to left, theme('colors.bg'), transparent);
+    }
+
+    .product-cat-nav-wrap.can-scroll-left::before,
+    .product-cat-nav-wrap.can-scroll-right::after {
+        opacity: 1;
+    }
+
+    /* 右側再加 chevron 提示（僅尚可往右滾時） */
+    .product-cat-nav-wrap.can-scroll-right > .product-cat-hint {
+        opacity: 1;
+    }
+
+    .product-cat-hint {
+        position: absolute;
+        right: 0.15rem;
+        top: 50%;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-top: -0.85rem; /* 略偏上，對齊文字列而非底線 */
+        border-radius: 9999px;
+        background-color: theme('colors.white / 80%');
+        color: theme('colors.gray3');
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .product-cat-hint [data-lucide] {
+        width: 1rem;
+        height: 1rem;
+        stroke-width: 2;
+    }
+
+    .product-cat-nav {
+        @apply w-full overflow-x-auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE／舊 Edge */
+    }
+
+    .product-cat-nav::-webkit-scrollbar {
+        display: none; /* Chrome／Safari */
+    }
+
+    .product-cat-list {
+        @apply relative flex w-full min-w-max items-start gap-8 md:gap-10;
+    }
+
+    .product-cat-list::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background-color: theme('colors.gray2');
+        pointer-events: none;
+    }
+
+    .product-cat-item {
+        @apply relative z-[1] pb-4 text-cb2 text-gray3 cursor-pointer bg-transparent border-0;
+        transition: color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .product-cat-item:hover {
+        @apply text-gray5;
+    }
+
+    .product-cat-item.is-active {
+        @apply text-gray5;
+        box-shadow: inset 0 -2px 0 theme('colors.gray5');
+    }
+
+    .product-cat-item:focus-visible {
+        outline: 2px solid theme('colors.main2');
+        outline-offset: 4px;
+    }
+
+    /* 產品介紹列表：auto-fill；欄寬鎖在約 264–288px，避免少卡時被拉寬 */
+    .product-catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16.5rem, 18rem));
+        justify-content: start;
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    .product-group.is-hidden {
+        display: none;
+    }
+
+    /* 產品列表卡・手機：橫向膠囊（圖左文右）；首頁 slider 不套用
+       md+ 仍用直向 product-card 原樣 */
+    @media (max-width: 799px) {
+        .product-catalog-grid {
+            grid-template-columns: 1fr;
+            justify-items: stretch;
+            gap: 1rem;
+        }
+
+        .product-catalog-grid .product-card--catalog {
+            flex-direction: row;
+            align-items: center;
+            max-width: none;
+            width: 100%;
+        }
+
+        .product-catalog-grid .product-card--catalog:hover {
+            transform: none;
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-media {
+            order: -1;
+            flex: 0 0 140px; /* 蓋掉基底 flex-1／w-full，不隨螢幕變寬 */
+            width: 140px;
+            max-width: 140px;
+            height: 140px;
+            min-height: 0;
+            aspect-ratio: 1 / 1;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-media img {
+            width: 140px;
+            max-width: 140px;
+            height: 140px;
+            object-fit: contain;
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-desc {
+            display: none;
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-body {
+            flex: 1;
+            align-self: stretch;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            padding: 0 1.5rem 0 0; /* 稿 pr-6；左側靠分隔線 */
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-copy {
+            flex: 1;
+            min-width: 0;
+            padding: 0 0 0 1.25rem; /* 稿 pl-5 */
+            border-bottom-width: 0;
+            border-left: 1px solid theme('colors.gray1');
+        }
+
+        .product-catalog-grid .product-card--catalog .product-card-copy .text-main2 {
+            padding-left: 0;
+        }
+
+        .product-catalog-grid .product-card--catalog .btn-icon-solid {
+            display: none;
+        }
+    }
+
+    /* 產品內頁：舞台（延續首頁漂浮／傾斜語彙，單圖無 Swiper） */
+    .product-stage {
+        isolation: isolate;
+    }
+
+    .product-stage-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    .product-stage-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: start;
+        gap: 4rem;
+    }
+
+    @screen lg {
+        .product-stage-grid {
+            /* 左文窄、右圖寬 */
+            grid-template-columns: minmax(0, 0.88fr) minmax(0, 1.12fr);
+            gap: 6rem;
+        }
+    }
+
+    .product-stage-visual {
+        min-height: 16rem;
+        perspective: 1100px;
+    }
+
+    @screen md {
+        .product-stage-visual {
+            min-height: 20rem;
+        }
+    }
+
+    .product-stage-float {
+        will-change: transform;
+        backface-visibility: hidden;
+        animation: hero-float 5.5s ease-in-out 0.6s infinite;
+    }
+
+    .product-stage-tilt {
+        transform: none;
+        transform-style: preserve-3d;
+        will-change: transform;
+    }
+
+    .product-stage-shadow-tilt {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        transform: translate3d(28px, 28px, 0);
+    }
+
+    .product-stage-shadow {
+        position: absolute;
+        inset: 0;
+        opacity: 0.12;
+        will-change: transform, opacity;
+        animation: hero-shadow 5.5s ease-in-out 0.6s infinite;
+    }
+
+    .product-stage-shadow-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        object-fit: contain;
+        filter: brightness(0) blur(20px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .product-stage-float,
+        .product-stage-shadow {
+            animation: none !important;
+        }
+
+        .product-stage-tilt {
+            transform: none !important;
+        }
+
+        .product-stage-shadow-tilt {
+            transform: translate3d(28px, 28px, 0) !important;
+        }
+    }
+
+    /* 規格重點：PC（md+）標籤｜內容並列；清掉 dd 預設縮排 */
+    .product-spec-value {
+        margin-inline-start: 0;
+    }
+
+    @screen md {
+        .product-spec-row {
+            display: flex;
+            flex-direction: row;
+            align-items: baseline;
+            gap: 1.5rem;
+        }
+
+        .product-spec-label {
+            flex-shrink: 0;
+            width: 7rem;
+        }
+
+        .product-spec-value {
+            flex: 1;
+            min-width: 0;
+        }
+    }
+
+    @screen lg {
+        .product-spec-label {
+            width: 8rem;
+        }
+    }
+
+    /* 產品圖為方圖＋實底，勿加 box-shadow；光影吃圖檔本身 */
 
     .product-swiper {
         overflow: visible;
@@ -186,7 +1254,7 @@
     }
 
     .hero-brand-text {
-        font-family: var(--font-display);
+        font-family: var(--font-latin-display);
         font-weight: 400;
         font-size: 185px;
         text-transform: uppercase;
@@ -200,7 +1268,7 @@
     }
 
     .pager-label {
-        font-family: var(--font-outfit);
+        font-family: var(--font-latin-body);
         font-weight: 400;
         font-size: 15px;
         line-height: 1.4;
@@ -248,12 +1316,19 @@
         background-color: theme('colors.gray5');
     }
 
-    /* Hero：右下角定位（右 80px、底 64px，與 Read more 底邊對齊） */
+    /* Hero 頁碼：手機靠右下、避開 Read more；md+ 右 80px／底 64px */
     .hero-pager {
         position: absolute;
-        right: 5rem;
-        bottom: 4rem;
+        right: 1.5rem; /* 24px：手機靠右 */
+        bottom: 1.5rem; /* 24px：比 Read more 更靠下 */
         z-index: 20;
+    }
+
+    @screen md {
+        .hero-pager {
+            right: 5rem;
+            bottom: 4rem;
+        }
     }
 
     /* 產品區：同組件，頁碼＋節點一組靠左 */
@@ -361,6 +1436,24 @@
         pointer-events: auto;
     }
 
+    /* Swiper 尚未 init：先亮第一張，避免等 JS 才從 opacity:0 露出（傷 LCP） */
+    .hero-swiper:not(.swiper-initialized) .swiper-slide:first-child .hero-motion {
+        translate: 0 0;
+        scale: 1;
+        opacity: 1;
+        transition: none;
+    }
+
+    /* 產品圖：載完後極短淡入（約 0.2s）；勿長時間藏圖 */
+    .hero-visual-img {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .hero-visual-img.is-ready {
+        opacity: 1;
+    }
+
     /* 第 1 層 motion：右進左出 + 縮放淡入淡出（只動 translate / scale / opacity，GPU 合成）
        - 新產品：從右側（稍小 0.85）滑入並放大到原尺寸，同時淡入
        - 舊產品：往左側滑出並縮小（0.85），同時淡出
@@ -441,24 +1534,6 @@
         animation: hero-shadow 5.5s ease-in-out 0.8s infinite;
     }
 
-    /* 左側文案 + 右下頁數：與產品同節奏進場 */
-    .hero-enter {
-        opacity: 0;
-        transform: translateY(1rem);
-        transition:
-            opacity 0.7s ease 0.12s,
-            transform 0.75s cubic-bezier(0.22, 1, 0.36, 1) 0.12s;
-    }
-
-    .hero-enter-delay {
-        transition-delay: 0.18s, 0.18s;
-    }
-
-    .hero.is-ready .hero-enter {
-        opacity: 1;
-        transform: translateY(0);
-    }
-
     .hero:focus {
         outline: none;
     }
@@ -466,15 +1541,6 @@
     .hero:focus-visible {
         outline: 2px solid theme('colors.main1');
         outline-offset: -2px;
-    }
-
-    .hero-copy-fade {
-        transition: opacity 0.35s ease, transform 0.35s ease;
-    }
-
-    .hero-copy-fade.is-leaving {
-        opacity: 0;
-        transform: translateX(-0.75rem);
     }
 
     @keyframes hero-float {
@@ -508,6 +1574,11 @@
             transition: none;
         }
 
+        .hero-visual-img {
+            opacity: 1;
+            transition: none;
+        }
+
         .hero-float {
             animation: none !important;
         }
@@ -528,22 +1599,25 @@
             transition: none;
         }
 
-        .hero-enter,
-        .hero-enter-delay {
-            opacity: 1;
-            transform: none;
+        .product-card,
+        .product-card:hover {
             transition: none;
+            transform: none;
         }
 
-        .hero-copy-fade,
-        .hero-copy-fade.is-leaving {
+        .btn-icon-solid::before,
+        .product-card:hover .btn-icon-solid::before {
             transition: none;
-            transform: none;
-            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
     }
 
-    /* Nav：TLC 式滑動 pill（main2/40% 底，hover 時文字轉 main1） */
+    /* Nav pill：玻璃底 + 柔和陰影（對齊站上其他 glass 卡） */
+    .nav-pill {
+        box-shadow: 0 0 32px 0 theme('colors.gray5 / 10%');
+    }
+
+    /* Nav：TLC 式滑動 pill（main2/40% 底）；當前頁文字不換色，維持 gray5 */
     .nav-track-list {
         isolation: isolate;
     }
@@ -572,15 +1646,11 @@
 
     .nav-item {
         position: relative;
-        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .nav-item.active:not(.is-over) {
-        color: theme('colors.main1');
-    }
-
+    /* 手機／平板當前頁：僅底色標示，文字維持 gray5 */
     .nav-item-mobile.active {
-        @apply bg-bg text-main1;
+        @apply bg-bg text-gray5;
     }
 
     /* 語系下拉：相對按鈕水平置中；出現時上滑淡入 */
@@ -622,7 +1692,7 @@
         inset: 0;
         z-index: -1;
         border-radius: 12px;
-        background-color: theme('colors.white / 90%');
+        background-color: theme('colors.white / 50%');
         opacity: 0;
         transition: opacity 0.25s ease;
     }
@@ -686,9 +1756,9 @@
         background-position: top left;
     }
 
-    /* ================= Chinese Body (Noto Sans TC Medium) ================= */
+    /* ================= Content Body（隨 lang：TC／SC／JP／Outfit）================= */
     .text-cb1 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 500;
         font-size: 18px;
         line-height: 1.8;
@@ -696,7 +1766,7 @@
     }
 
     .text-cb2 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 500;
         font-size: 16px;
         line-height: 1.9;
@@ -704,16 +1774,16 @@
     }
 
     .text-cb3 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 500;
         font-size: 14px;
         line-height: 1.8;
         letter-spacing: 0.05em;
     }
 
-    /* ================= Chinese Heading (Noto Sans TC) ================= */
+    /* ================= Content Heading（隨 lang）================= */
     .text-ch1 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 700;
         font-size: 52px;
         line-height: 1.2;
@@ -721,23 +1791,29 @@
     }
 
     .text-ch2 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 700;
         font-size: 40px;
-        line-height: 1.2;
+        line-height: 1.5;
         letter-spacing: 0.05em;
     }
 
     .text-ch3 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 700;
-        font-size: 32px;
+        font-size: 26px;
         line-height: 1.5;
         letter-spacing: 0.02em;
     }
 
+    @screen lg {
+        .text-ch3 {
+            font-size: 32px;
+        }
+    }
+
     .text-ch4 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 700;
         font-size: 24px;
         line-height: 1.6;
@@ -745,16 +1821,16 @@
     }
 
     .text-ch5 {
-        font-family: var(--font-sans);
+        font-family: var(--font-content);
         font-weight: 500;
         font-size: 20px;
         line-height: 1.5;
         letter-spacing: 0.05em;
     }
 
-    /* ================= English Body (Outfit Regular) ================= */
+    /* ================= Latin Body（Outfit；品牌英文小字，不隨語系換）================= */
     .text-eb2 {
-        font-family: var(--font-outfit);
+        font-family: var(--font-latin-body);
         font-weight: 400;
         font-size: 16px;
         line-height: 1.6;
@@ -762,19 +1838,95 @@
     }
 
     .text-eb3 {
-        font-family: var(--font-outfit);
+        font-family: var(--font-latin-body);
         font-weight: 400;
         font-size: 13px;
         line-height: 1.5;
         letter-spacing: 0.06em;
     }
 
-    /* ================= English Heading (Tenor Sans Regular) ================= */
+    /* ================= Latin Heading（Tenor Sans；品牌英文大標）================= */
+    /* 平板以下（< lg 1200）46px；桌機 60px */
     .text-eh1 {
-        font-family: var(--font-display);
+        font-family: var(--font-latin-display);
         font-weight: 400;
-        font-size: 60px;
+        font-size: 46px;
         line-height: 1.16;
         letter-spacing: 0.02em;
+    }
+
+    @screen lg {
+        .text-eh1 {
+            font-size: 60px;
+        }
+    }
+
+    /* ================= Legal doc（隱私權／服務條款）================= */
+    .legal-panel {
+        @apply px-6 py-10 md:p-10 lg:p-16 bg-white/70 backdrop-blur-lg rounded-2xl md:rounded-[40px];
+    }
+
+    .legal-doc {
+        width: 100%;
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .legal-doc .legal-lead {
+        margin-bottom: 2.5rem;
+    }
+
+    .legal-doc .legal-section {
+        margin-bottom: 2rem;
+    }
+
+    .legal-doc .legal-section:last-of-type {
+        margin-bottom: 2.5rem;
+    }
+
+    .legal-doc h2 {
+        margin-bottom: 0.75rem;
+    }
+
+    .legal-doc p + p,
+    .legal-doc p + ol,
+    .legal-doc p + ul {
+        margin-top: 0.75rem;
+    }
+
+    .legal-doc ol,
+    .legal-doc ul {
+        margin-top: 0.75rem;
+        padding-left: 1.25rem;
+    }
+
+    .legal-doc ol {
+        list-style: decimal;
+    }
+
+    .legal-doc ul {
+        list-style: disc;
+    }
+
+    .legal-doc li + li {
+        margin-top: 0.4rem;
+    }
+
+    .legal-doc a {
+        color: theme('colors.main1');
+        text-underline-offset: 2px;
+        transition: opacity 0.2s ease;
+    }
+
+    .legal-doc a:hover {
+        text-decoration: underline;
+        opacity: 0.85;
+    }
+
+    .legal-doc .legal-updated {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid theme('colors.gray1');
     }
 }

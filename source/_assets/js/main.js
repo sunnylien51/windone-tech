@@ -1,22 +1,14 @@
 // 與 tailwind.config.js 的 screens.lg 一致
 const LG_BREAKPOINT = 1200;
 
-document.addEventListener('DOMContentLoaded', function () {
-    if (typeof AOS !== 'undefined') {
-        AOS.init({
-            duration: 800,
-            once: true,
-        });
-    }
-
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-
-    if (typeof Fancybox !== 'undefined') {
-        Fancybox.bind('[data-fancybox]', {});
-    }
-});
+/* Mac 觸控板左右滑：Swiper mousewheel + 只吃橫向（縱向仍交給頁面／Lenis） */
+const swiperTrackpadWheel = {
+    enabled: true,
+    forceToAxis: true,
+    sensitivity: 1,
+    thresholdDelta: 8,
+    releaseOnEdges: true,
+};
 
 // Lenis 1.x：用 autoRaf；開選單時 stop()，關選單時 start()
 if (typeof Lenis !== 'undefined') {
@@ -28,6 +20,37 @@ if (typeof Lenis !== 'undefined') {
     });
 
     window.lenis = lenis;
+}
+
+function initPageEnhancements() {
+    if (typeof AOS !== 'undefined') {
+        // offset:0 → 首屏標題／副標進頁就觸發，不用先滾一下
+        // Vite module 可能晚於 DOMContentLoaded，故用 readyState 雙路徑
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 0,
+        });
+
+        // 下一幀＋完整 load：確保首屏已在視窗內的元素立刻加上 aos-animate
+        const refreshAos = () => AOS.refresh();
+        requestAnimationFrame(refreshAos);
+        window.addEventListener('load', refreshAos, { once: true });
+    }
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+
+    if (typeof Fancybox !== 'undefined') {
+        Fancybox.bind('[data-fancybox]', {});
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageEnhancements);
+} else {
+    initPageEnhancements();
 }
 
 const backToTopBtn = document.getElementById('back-to-top');
@@ -43,24 +66,27 @@ if (backToTopBtn) {
 
 /* ---------- Mobile menu ---------- */
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 const navMenu = document.getElementById('nav-menu');
 const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 
 function setMobileMenuIcon(name) {
-    if (!mobileMenuIcon) {
+    if (!mobileMenuBtn) {
         return;
     }
 
-    mobileMenuIcon.setAttribute('data-lucide', name);
+    // Lucide 會把 <i> 換成 <svg>，舊節點會失效；每次在按鈕內重建再 createIcons
+    const icon = document.createElement('i');
+    icon.id = 'mobile-menu-icon';
+    icon.className = 'w-5 h-5';
+    icon.setAttribute('data-lucide', name);
+    mobileMenuBtn.replaceChildren(icon);
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 
-    if (mobileMenuBtn) {
-        mobileMenuBtn.setAttribute('aria-expanded', name === 'x' ? 'true' : 'false');
-        mobileMenuBtn.setAttribute('aria-label', name === 'x' ? '關閉選單' : '開啟選單');
-    }
+    mobileMenuBtn.setAttribute('aria-expanded', name === 'x' ? 'true' : 'false');
+    mobileMenuBtn.setAttribute('aria-label', name === 'x' ? '關閉選單' : '開啟選單');
 }
 
 function lockPageScroll() {
@@ -84,7 +110,7 @@ function closeMobileMenu() {
         return;
     }
 
-    navMenu.classList.add('translate-x-full');
+    navMenu.classList.add('translate-x-full', 'opacity-0');
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.add('hidden');
     }
@@ -97,7 +123,7 @@ function openMobileMenu() {
         return;
     }
 
-    navMenu.classList.remove('translate-x-full');
+    navMenu.classList.remove('translate-x-full', 'opacity-0');
     if (mobileMenuOverlay) {
         mobileMenuOverlay.classList.remove('hidden');
     }
@@ -149,7 +175,7 @@ function moveNavTrackerTo(el) {
     navTrackList.classList.add('is-tracking');
 }
 
-// 對齊 TLC：非 hover 時收起 tracker；目前頁面僅用文字色標示 active
+// 對齊 TLC：非 hover 時收起 tracker
 function hideNavTracker() {
     if (!navTrackList || !navTracker) {
         return;
@@ -209,6 +235,29 @@ if (langBtn && langMenu) {
     });
 }
 
+function applyNavLang(lang) {
+    document.querySelectorAll('[data-i18n-nav]').forEach((el) => {
+        let labels = {};
+        try {
+            labels = JSON.parse(el.getAttribute('data-labels') || '{}');
+        } catch (e) {
+            return;
+        }
+        const text = labels[lang];
+        if (text) {
+            el.textContent = text;
+        }
+    });
+}
+
+/** 切語系時更新 html lang，讓 :lang(...) 字型變數生效（示意） */
+function applyDocumentLang(lang) {
+    if (!lang) {
+        return;
+    }
+    document.documentElement.setAttribute('lang', lang);
+}
+
 document.querySelectorAll('.lang-option').forEach((option) => {
     option.addEventListener('click', function () {
         const lang = this.getAttribute('data-lang');
@@ -221,6 +270,10 @@ document.querySelectorAll('.lang-option').forEach((option) => {
         if (langLabel && label) {
             langLabel.textContent = label;
         }
+        if (lang) {
+            applyDocumentLang(lang);
+            applyNavLang(lang);
+        }
         closeLangMenu();
     });
 });
@@ -229,7 +282,6 @@ document.querySelectorAll('.lang-option').forEach((option) => {
 const heroSwiperEl = document.getElementById('hero-swiper');
 if (heroSwiperEl && typeof Swiper !== 'undefined') {
     const heroSection = document.getElementById('home-hero');
-    const heroCopy = document.getElementById('hero-copy');
     const heroTitle = document.getElementById('hero-title');
     const heroBody = document.getElementById('hero-body');
     const heroLink = document.getElementById('hero-link');
@@ -252,7 +304,7 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         return Boolean(
             target?.closest?.(
                 // 左側文案／Read more／頁數：等同離開 hero，整顆關掉自訂游標、不觸發換頁
-                '.hero-footer .hero-enter, .hero-pager, a, button, input, textarea, select, label'
+                '.hero-footer, .hero-pager, a, button, input, textarea, select, label'
             )
         );
     }
@@ -286,24 +338,14 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         });
     }
 
-    function syncHeroCopy(swiper, animate) {
+    function syncHeroCopy(swiper) {
         const slide = swiper.slides[swiper.activeIndex];
         if (!slide) {
             return;
         }
 
         syncHeroPager(swiper);
-
-        if (!animate || reduceMotion || !heroCopy) {
-            applyHeroCopy(slide);
-            return;
-        }
-
-        heroCopy.classList.add('is-leaving');
-        window.setTimeout(() => {
-            applyHeroCopy(slide);
-            heroCopy.classList.remove('is-leaving');
-        }, 220);
+        applyHeroCopy(slide);
     }
 
     function setCursorProgress(fraction) {
@@ -330,6 +372,7 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
         // 用 fade 讓同時只有一張可見；進出場的右進左出＋縮放淡入淡出交給 CSS 的 .hero-motion
         effect: 'fade',
         fadeEffect: { crossFade: true },
+        mousewheel: swiperTrackpadWheel,
         autoplay: reduceMotion
             ? false
             : {
@@ -339,16 +382,11 @@ if (heroSwiperEl && typeof Swiper !== 'undefined') {
               },
         on: {
             init(swiper) {
-                syncHeroCopy(swiper, false);
+                syncHeroCopy(swiper);
                 syncCursorSlideProgress(swiper);
-                if (heroSection) {
-                    requestAnimationFrame(() => {
-                        heroSection.classList.add('is-ready');
-                    });
-                }
             },
             slideChange(swiper) {
-                syncHeroCopy(swiper, true);
+                syncHeroCopy(swiper);
                 syncCursorSlideProgress(swiper);
             },
         },
@@ -619,9 +657,10 @@ if (productSwiperEl && typeof Swiper !== 'undefined') {
         spaceBetween: 16,
         speed: reduceMotionProducts ? 0 : 600,
         watchOverflow: true,
+        mousewheel: swiperTrackpadWheel,
         breakpoints: {
             800: {
-                slidesPerView: 2.4,
+                slidesPerView: 3.25,
                 spaceBetween: 20,
             },
             1200: {
@@ -643,4 +682,217 @@ if (productSwiperEl && typeof Swiper !== 'undefined') {
             },
         },
     });
+}
+
+/* ---------- Home partners slider（全斷點單列） ---------- */
+const partnerSwiperEl = document.getElementById('partner-swiper');
+if (partnerSwiperEl && typeof Swiper !== 'undefined') {
+    const reduceMotionPartners = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    new Swiper(partnerSwiperEl, {
+        slidesPerView: 2.25,
+        spaceBetween: 0,
+        speed: reduceMotionPartners ? 0 : 500,
+        grabCursor: true,
+        simulateTouch: true,
+        allowTouchMove: true,
+        watchOverflow: true,
+        mousewheel: swiperTrackpadWheel,
+        breakpoints: {
+            768: {
+                slidesPerView: 3.5,
+            },
+            1024: {
+                slidesPerView: 4,
+            },
+            1280: {
+                slidesPerView: 6,
+            },
+        },
+    });
+}
+
+/* ---------- Data panel：底圖視差（滾得比內容慢） ---------- */
+const dataPanel = document.querySelector('.data-panel');
+const dataPanelBg = dataPanel && dataPanel.querySelector('.data-panel-bg');
+if (dataPanel && dataPanelBg && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // 0～1：越小底圖動得越慢
+    const DATA_PARALLAX = 0.28;
+    // 須對齊 CSS：.data-panel-bg top -50% / height 200% → 理論可動 50%；留一點安全邊
+    const DATA_PARALLAX_MAX_RATIO = 0.45;
+
+    const updateDataParallax = () => {
+        const rect = dataPanel.getBoundingClientRect();
+        const viewH = window.innerHeight || 1;
+        if (rect.bottom < -80 || rect.top > viewH + 80) {
+            return;
+        }
+        const panelH = rect.height || 1;
+        const maxShift = panelH * DATA_PARALLAX_MAX_RATIO;
+        // 面板中心相對視窗中心的位移 × 係數；clamp 避免超出底圖層而露 gray5
+        const centerDelta = rect.top + panelH / 2 - viewH / 2;
+        const y = Math.max(-maxShift, Math.min(maxShift, centerDelta * DATA_PARALLAX));
+        dataPanelBg.style.transform = `translate3d(0, ${y}px, 0)`;
+    };
+
+    if (window.lenis) {
+        window.lenis.on('scroll', updateDataParallax);
+    } else {
+        window.addEventListener('scroll', updateDataParallax, { passive: true });
+    }
+    window.addEventListener('resize', updateDataParallax, { passive: true });
+    updateDataParallax();
+}
+
+/* ---------- 產品內頁舞台：輕量 3D 傾斜（沿用首頁語彙，無 Swiper） ---------- */
+const productStage = document.getElementById('product-stage');
+if (productStage) {
+    const canHoverStage = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const reduceMotionStage = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (canHoverStage && !reduceMotionStage) {
+        const MAX_TILT = 7;
+        const EASE = 0.08;
+        const SHADOW_BASE = 28;
+        const tiltEl = productStage.querySelector('.product-stage-tilt');
+        const shadowEl = productStage.querySelector('.product-stage-shadow-tilt');
+        let targetX = 0;
+        let targetY = 0;
+        let curX = 0;
+        let curY = 0;
+        let rafId = null;
+
+        const applyTilt = (x, y) => {
+            if (tiltEl) {
+                tiltEl.style.transform = `perspective(1100px) rotateX(${x.toFixed(2)}deg) rotateY(${y.toFixed(2)}deg)`;
+            }
+            if (shadowEl) {
+                shadowEl.style.transform = `translate3d(${(SHADOW_BASE - y * 1.5).toFixed(1)}px, ${(SHADOW_BASE + x * 1.5).toFixed(1)}px, 0)`;
+            }
+        };
+
+        const tick = () => {
+            curX += (targetX - curX) * EASE;
+            curY += (targetY - curY) * EASE;
+
+            if (Math.abs(targetX - curX) > 0.01 || Math.abs(targetY - curY) > 0.01) {
+                applyTilt(curX, curY);
+                rafId = requestAnimationFrame(tick);
+            } else {
+                curX = targetX;
+                curY = targetY;
+                applyTilt(curX, curY);
+                rafId = null;
+            }
+        };
+
+        const kick = () => {
+            if (rafId === null) {
+                rafId = requestAnimationFrame(tick);
+            }
+        };
+
+        productStage.addEventListener('mousemove', (e) => {
+            const rect = productStage.getBoundingClientRect();
+            const nx = (e.clientX - rect.left) / rect.width - 0.5;
+            const ny = (e.clientY - rect.top) / rect.height - 0.5;
+            targetY = nx * 2 * MAX_TILT;
+            targetX = -ny * 2 * MAX_TILT;
+            kick();
+        });
+
+        productStage.addEventListener('mouseleave', () => {
+            targetX = 0;
+            targetY = 0;
+            kick();
+        });
+    }
+}
+
+/* ---------- 產品介紹：分類選單＋列表篩選＋橫滑提示 ---------- */
+const productCatNav = document.getElementById('product-categories');
+if (productCatNav) {
+    const catTabs = Array.from(productCatNav.querySelectorAll('[data-product-cat]'));
+    const productGroups = Array.from(document.querySelectorAll('[data-product-group]'));
+    const productCatWrap = productCatNav.closest('.product-cat-nav-wrap');
+
+    const updateProductCatScrollHint = () => {
+        if (!productCatWrap) {
+            return;
+        }
+        const maxScroll = productCatNav.scrollWidth - productCatNav.clientWidth;
+        const left = productCatNav.scrollLeft;
+        const canScroll = maxScroll > 2;
+        productCatWrap.classList.toggle('can-scroll-left', canScroll && left > 2);
+        productCatWrap.classList.toggle('can-scroll-right', canScroll && left < maxScroll - 2);
+    };
+
+    const filterProductGroups = (slug) => {
+        const showAll = !slug || slug === 'all';
+        let firstVisible = null;
+        productGroups.forEach((group) => {
+            const match = showAll || group.getAttribute('data-product-group') === slug;
+            group.classList.toggle('is-hidden', !match);
+            if (match && !firstVisible) {
+                firstVisible = group;
+            }
+        });
+        return firstVisible;
+    };
+
+    const setActiveCat = (activeBtn) => {
+        catTabs.forEach((btn) => {
+            const on = btn === activeBtn;
+            btn.classList.toggle('is-active', on);
+            btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+    };
+
+    catTabs.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const slug = btn.getAttribute('data-product-cat') || '';
+            setActiveCat(btn);
+            const firstVisible = filterProductGroups(slug);
+            if (firstVisible && slug !== 'all') {
+                firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    productCatNav.addEventListener('scroll', updateProductCatScrollHint, { passive: true });
+    window.addEventListener('resize', updateProductCatScrollHint, { passive: true });
+    updateProductCatScrollHint();
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+/* ---------- Page banner 形象圖：圓角框內視差（類似 TLC Healthcare） ---------- */
+const bannerMediaFrame = document.querySelector('.page-banner-media-frame');
+const bannerMediaParallax = bannerMediaFrame && bannerMediaFrame.querySelector('.page-banner-media-parallax');
+if (bannerMediaFrame && bannerMediaParallax && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // CSS：top -15% / height 130% → 可動約 15%；係數柔一點
+    const BANNER_PARALLAX = 0.22;
+    const BANNER_PARALLAX_MAX_RATIO = 0.14;
+
+    const updateBannerParallax = () => {
+        const rect = bannerMediaFrame.getBoundingClientRect();
+        const viewH = window.innerHeight || 1;
+        if (rect.bottom < -80 || rect.top > viewH + 80) {
+            return;
+        }
+        const frameH = rect.height || 1;
+        const maxShift = frameH * BANNER_PARALLAX_MAX_RATIO;
+        const centerDelta = rect.top + frameH / 2 - viewH / 2;
+        const y = Math.max(-maxShift, Math.min(maxShift, centerDelta * BANNER_PARALLAX));
+        bannerMediaParallax.style.transform = `translate3d(0, ${y}px, 0)`;
+    };
+
+    if (window.lenis) {
+        window.lenis.on('scroll', updateBannerParallax);
+    } else {
+        window.addEventListener('scroll', updateBannerParallax, { passive: true });
+    }
+    window.addEventListener('resize', updateBannerParallax, { passive: true });
+    updateBannerParallax();
 }

@@ -5,3 +5,22 @@
 [build.environment]
   PHP_VERSION = "8.3"
   NODE_VERSION = "22"
+
+# favicon 快取很兇；短快取避免舊 404／壞圖一直黏著
+[[headers]]
+  for = "/favicon.ico"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "image/x-icon"
+
+[[headers]]
+  for = "/favicon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "image/png"
+
+[[headers]]
+  for = "/images/favicon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Content-Type = "image/png"
