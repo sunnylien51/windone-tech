@@ -5,17 +5,23 @@ description: 關於我們
 @extends('_layouts.main')
 
 {{-- is-inner：讓 site-main clip 住 page-banner 底圖，不撐出 footer 外 --}}
-{{-- 本頁之後整頁編輯器維護：文案／圖都寫在 HTML，不走 config --}}
+{{-- 圖片走 config aboutPage；文案之後以 HTML 範本編輯器維護 --}}
 @section('bodyClass', 'bg-bg is-inner')
 
 @section('body')
+    @php
+        $aboutPage = $page->asArray($page->aboutPage ?? []);
+        $aboutBanner = $page->asArray($aboutPage['banner'] ?? []);
+    @endphp
+
     @include('_components.page-banner', [
         'title' => 'ABOUT',
         'crumbs' => [
             ['name' => '關於我們'],
         ],
-        'subtitle' => '崴東自 1995 年深耕高精密工業刀具與治具領域。我們秉持品質卓越與服務至誠的精神，為半導體與 PCB 產業提供最穩定的製程解決方案。',
-        'image' => '/images/banner_about.jpg',
+        'subtitle' => $aboutBanner['subtitle'] ?? null,
+        'image' => $aboutBanner['image'] ?? '/images/banner_about.jpg',
+        'imageAlt' => '崴東科技',
     ])
 
     <div class="layout-grid flex-col pt-14 md:pt-16 lg:pt-20 pb-20 md:pb-24 lg:pb-28">

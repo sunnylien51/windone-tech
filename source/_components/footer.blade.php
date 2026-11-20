@@ -14,7 +14,7 @@
             {{-- Get in Touch --}}
             <a
                 href="/contact/"
-                class="footer-touch relative w-full lg:w-[500px] h-56 md:h-72 shrink-0 bg-gray5 rounded-[20px] md:rounded-[30px] flex flex-col justify-between items-end overflow-hidden"
+                class="footer-touch relative w-full lg:w-[500px] h-56 md:h-72 shrink-0 bg-gray5 rounded-[20px] md:rounded-[24px] flex flex-col justify-between items-end overflow-hidden"
                 aria-label="聯絡我們"
             >
                 <img

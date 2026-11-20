@@ -7,6 +7,16 @@
         ['code' => 'zh-Hans', 'label' => '简体中文'],
     ];
     $currentLang = $langs[0];
+    $catalogDownload = $page->asArray($page->catalogDownload ?? []);
+    $catalogFile = trim((string) ($catalogDownload['file'] ?? ''));
+    $showCatalogDownload = $catalogFile !== '';
+    $catalogLabels = $page->asArray($catalogDownload['labels'] ?? [
+        'zh-Hant' => '型錄下載',
+        'zh-Hans' => '型录下载',
+        'en' => 'Catalog',
+        'ja' => 'カタログ',
+    ]);
+    $catalogLabel = $catalogLabels[$currentLang['code']] ?? ($catalogLabels['zh-Hant'] ?? '型錄下載');
 @endphp
 
 {{-- ----------------------------------------------------------------------
@@ -19,67 +29,88 @@
             <img src="/images/logo.svg" alt="{{ $page->siteName }}" class="h-8 md:h-9 w-auto">
         </a>
 
-        {{-- Desktop pill cluster --}}
-        <div class="nav-pill hidden lg:flex items-center gap-3 p-2 bg-white/65 rounded-full backdrop-blur-lg">
-            <a
-                href="/"
-                class="nav-home-btn size-10 shrink-0 bg-white/70 rounded-full outline-inset outline-gray1 flex justify-center items-center text-gray5 transition-colors hover:bg-white"
-                aria-label="回首頁"
-            >
-                <i data-lucide="home" class="w-4 h-4"></i>
-            </a>
-
-            {{-- TLC 式滑動 pill hover：tracker 跟滑鼠移動 --}}
-            <ul id="nav-track-list" class="nav-track-list relative flex items-center gap-0.5">
-                <span class="nav-tracker" aria-hidden="true"></span>
-                @foreach ($navItems as $item)
-                    @php
-                        $itemLabels = $item['labels'] ?? ['zh-Hant' => $item['label']];
-                    @endphp
-                    <li class="relative z-10">
-                        <a
-                            href="{{ $item['path'] }}/"
-                            class="nav-item text-cb2 text-gray5 h-10 px-4 rounded-full inline-flex items-center justify-center {{ $page->isActive($item['path']) }}"
-                            data-i18n-nav
-                            data-labels="{{ json_encode($itemLabels, JSON_UNESCAPED_UNICODE) }}"
-                        >{{ $itemLabels[$currentLang['code']] ?? $item['label'] }}</a>
-                    </li>
-                @endforeach
-            </ul>
-
-            <div class="relative shrink-0" id="lang-switch">
-                <button
-                    type="button"
-                    id="lang-btn"
-                    class="nav-lang h-10 w-[130px] pl-2 pr-3 py-2 bg-white/70 rounded-full outline-inset outline-gray1 inline-flex items-center justify-start gap-2 text-gray5 cursor-pointer transition-colors hover:bg-white"
-                    aria-expanded="false"
-                    aria-haspopup="listbox"
-                    aria-controls="lang-menu"
+        {{-- Desktop：選單 pill ＋ 型錄下載（有檔才顯示） --}}
+        <div class="hidden lg:flex items-center gap-3">
+            <div class="nav-pill flex items-center gap-3 p-2 bg-white/65 rounded-full backdrop-blur-lg">
+                <a
+                    href="/"
+                    class="nav-home-btn size-10 shrink-0 bg-white/70 rounded-full outline-inset outline-gray1 flex justify-center items-center text-gray5 transition-colors hover:bg-white"
+                    aria-label="回首頁"
                 >
-                    <i data-lucide="globe" class="w-5 h-5 shrink-0"></i>
-                    <span id="lang-label" class="text-eb3 whitespace-nowrap truncate min-w-0">{{ $currentLang['label'] }}</span>
-                    <i data-lucide="chevron-down" class="lang-chevron w-3.5 h-3.5 shrink-0 ml-auto"></i>
-                </button>
-                <ul
-                    id="lang-menu"
-                    class="lang-menu absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-full flex-col gap-1 overflow-hidden rounded-[20px] bg-white/50 backdrop-blur-lg p-1.5 shadow-[0_8px_24px_theme(colors.gray5/5%)]"
-                    role="listbox"
-                    aria-label="語言"
-                >
-                    @foreach ($langs as $lang)
-                        <li>
-                            <button
-                                type="button"
-                                class="lang-option text-eb3 relative z-0 flex w-full cursor-pointer items-center justify-center rounded-[12px] px-3 py-2 text-gray5 whitespace-nowrap {{ $lang['code'] === $currentLang['code'] ? 'is-active' : '' }}"
-                                role="option"
-                                aria-selected="{{ $lang['code'] === $currentLang['code'] ? 'true' : 'false' }}"
-                                data-lang="{{ $lang['code'] }}"
-                                data-label="{{ $lang['label'] }}"
-                            >{{ $lang['label'] }}</button>
+                    <i data-lucide="home" class="w-4 h-4"></i>
+                </a>
+
+                {{-- TLC 式滑動 pill hover：tracker 跟滑鼠移動 --}}
+                <ul id="nav-track-list" class="nav-track-list relative flex items-center gap-0.5">
+                    <span class="nav-tracker" aria-hidden="true"></span>
+                    @foreach ($navItems as $item)
+                        @php
+                            $itemLabels = $item['labels'] ?? ['zh-Hant' => $item['label']];
+                        @endphp
+                        <li class="relative z-10">
+                            <a
+                                href="{{ $item['path'] }}/"
+                                class="nav-item text-cb2 text-gray5 h-10 px-4 rounded-full inline-flex items-center justify-center {{ $page->isActive($item['path']) }}"
+                                data-i18n-nav
+                                data-labels="{{ json_encode($itemLabels, JSON_UNESCAPED_UNICODE) }}"
+                            >{{ $itemLabels[$currentLang['code']] ?? $item['label'] }}</a>
                         </li>
                     @endforeach
                 </ul>
+
+                <div class="relative shrink-0" id="lang-switch">
+                    <button
+                        type="button"
+                        id="lang-btn"
+                        class="nav-lang h-10 w-[130px] pl-2 pr-3 py-2 bg-white/70 rounded-full outline-inset outline-gray1 inline-flex items-center justify-start gap-2 text-gray5 cursor-pointer transition-colors hover:bg-white"
+                        aria-expanded="false"
+                        aria-haspopup="listbox"
+                        aria-controls="lang-menu"
+                    >
+                        <i data-lucide="globe" class="w-5 h-5 shrink-0"></i>
+                        <span id="lang-label" class="text-eb3 whitespace-nowrap truncate min-w-0">{{ $currentLang['label'] }}</span>
+                        <i data-lucide="chevron-down" class="lang-chevron w-3.5 h-3.5 shrink-0 ml-auto"></i>
+                    </button>
+                    <ul
+                        id="lang-menu"
+                        class="lang-menu absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-full flex-col gap-1 overflow-hidden rounded-[20px] bg-white/50 backdrop-blur-lg p-1.5 shadow-[0_8px_24px_theme(colors.gray5/5%)]"
+                        role="listbox"
+                        aria-label="語言"
+                    >
+                        @foreach ($langs as $lang)
+                            <li>
+                                <button
+                                    type="button"
+                                    class="lang-option text-eb3 relative z-0 flex w-full cursor-pointer items-center justify-center rounded-[12px] px-3 py-2 text-gray5 whitespace-nowrap {{ $lang['code'] === $currentLang['code'] ? 'is-active' : '' }}"
+                                    role="option"
+                                    aria-selected="{{ $lang['code'] === $currentLang['code'] ? 'true' : 'false' }}"
+                                    data-lang="{{ $lang['code'] }}"
+                                    data-label="{{ $lang['label'] }}"
+                                >{{ $lang['label'] }}</button>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
+
+            @if ($showCatalogDownload)
+                <a
+                    href="{{ $catalogFile }}"
+                    class="btn-dark shrink-0"
+                    download
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span class="btn-dark-icon" aria-hidden="true">
+                        <i data-lucide="download"></i>
+                    </span>
+                    <span
+                        class="text-cb2 text-white"
+                        data-i18n-nav
+                        data-labels="{{ json_encode($catalogLabels, JSON_UNESCAPED_UNICODE) }}"
+                    >{{ $catalogLabel }}</span>
+                </a>
+            @endif
         </div>
 
         {{-- Mobile toggle --}}
@@ -114,6 +145,25 @@
                     </li>
                 @endforeach
             </ul>
+
+            @if ($showCatalogDownload)
+                <a
+                    href="{{ $catalogFile }}"
+                    class="btn-dark w-full"
+                    download
+                    target="_blank"
+                    rel="noopener"
+                >
+                    <span class="btn-dark-icon" aria-hidden="true">
+                        <i data-lucide="download"></i>
+                    </span>
+                    <span
+                        class="text-cb2 text-white"
+                        data-i18n-nav
+                        data-labels="{{ json_encode($catalogLabels, JSON_UNESCAPED_UNICODE) }}"
+                    >{{ $catalogLabel }}</span>
+                </a>
+            @endif
 
             <div class="flex flex-wrap items-center gap-1 pt-4 border-t border-white/40 w-full" role="listbox" aria-label="語言">
                 @foreach ($langs as $lang)

@@ -63,7 +63,7 @@ $events->beforeBuild(function (Jigsaw $jigsaw) {
             }
 
             $title = str_replace(["\r", "\n"], '', (string) ($item['title'] ?? $slug));
-            $description = str_replace(["\r", "\n"], ' ', (string) ($item['body'] ?? $item['lead'] ?? $title));
+            $description = str_replace(["\r", "\n"], ' ', (string) ($item['body'] ?? $title));
             $description = trim(preg_replace('/\s+/', ' ', $description));
 
             $expected[$slug] = true;

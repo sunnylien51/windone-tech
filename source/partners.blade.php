@@ -11,6 +11,7 @@ description: 合作夥伴
     @php
         $partnersPage = $page->asArray($page->partnersPage ?? []);
         $banner = $page->asArray($partnersPage['banner'] ?? []);
+        $partnerCta = $page->asArray($partnersPage['cta'] ?? []);
         $partnerLogos = $page->asArray($page->partnerLogos ?? []);
     @endphp
 
@@ -37,7 +38,7 @@ description: 合作夥伴
                     @foreach ($partnerLogos as $logo)
                         @php
                             $logoImage = $logo['image'] ?? '';
-                            $logoAlt = $logo['alt'] ?? ($logo['name'] ?? 'Partner');
+                            $logoName = $logo['name'] ?? 'Partner';
                             $logoLink = $logo['link'] ?? '';
                         @endphp
                         <li>
@@ -47,7 +48,7 @@ description: 合作夥伴
                                     class="partner-grid-item"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    aria-label="前往{{ $logoAlt }}官方網站"
+                                    aria-label="前往{{ $logoName }}官方網站"
                                 >
                                     <span class="partner-grid-logo">
                                         <img
@@ -65,7 +66,7 @@ description: 合作夥伴
                                     <div class="partner-grid-logo">
                                         <img
                                             src="{{ $logoImage }}"
-                                            alt="{{ $logoAlt }}"
+                                            alt="{{ $logoName }}"
                                             width="200"
                                             height="80"
                                             loading="lazy"
@@ -81,7 +82,7 @@ description: 合作夥伴
         @endif
 
         {{-- ----------------------------------------------------------------------
-             ★ SECTION · Partners CTA - 洽詢合作（無後台，文案寫在 HTML）
+             ★ SECTION · Partners CTA - 洽詢合作
              ---------------------------------------------------------------------- --}}
         <section
             class="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-8 md:gap-12"
@@ -90,14 +91,14 @@ description: 合作夥伴
         >
             <div class="w-full md:max-w-xl flex flex-col items-start gap-3">
                 <span class="accent-bar" aria-hidden="true"></span>
-                <h2 class="w-full text-ch3 text-gray5">歡迎洽詢合作</h2>
-                <p class="w-full text-cb2 text-gray3">無論是供應諮詢、客製開發或長期合作規劃，崴東團隊樂於與您深入討論。</p>
+                <h2 class="w-full text-ch3 text-gray5">{{ $partnerCta['title'] ?? '歡迎洽詢合作' }}</h2>
+                <p class="w-full text-cb2 text-gray3">{{ $partnerCta['body'] ?? '' }}</p>
             </div>
             <a href="/contact/" class="btn-dark shrink-0">
                 <span class="btn-dark-icon" aria-hidden="true">
                     <i data-lucide="arrow-right"></i>
                 </span>
-                <span class="text-cb2 text-white">聯絡我們</span>
+                <span class="text-cb2 text-white">{{ $partnerCta['button'] ?? '聯絡我們' }}</span>
             </a>
         </section>
     </div>

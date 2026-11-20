@@ -97,7 +97,7 @@ description: 聯絡我們
             >
                 <div class="w-full flex flex-col items-start gap-3">
                     <span class="accent-bar" aria-hidden="true"></span>
-                    <h2 class="w-full text-ch3 text-gray5">{{ $contactPage['formTitle'] ?? '線上諮詢' }}</h2>
+                    <h2 class="w-full text-ch3 text-gray5">線上諮詢</h2>
                 </div>
 
                 <form
@@ -177,19 +177,3 @@ description: 聯絡我們
         @endif
     </div>
 @endsection
-
-@push('scripts')
-{{-- 產品內頁「立即詢價」帶 ?product= 時預填需求說明 --}}
-<script>
-    (function () {
-        try {
-            var params = new URLSearchParams(window.location.search);
-            var product = (params.get('product') || '').trim();
-            if (!product) return;
-            var field = document.getElementById('contact-message');
-            if (!field || field.value) return;
-            field.value = '想詢問產品：' + product;
-        } catch (e) {}
-    })();
-</script>
-@endpush

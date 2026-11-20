@@ -18,14 +18,18 @@
 
 @section('body')
 @php
-    $productCards = $page->asArray($page->productCards ?? []);
-    $valueCards = $page->asArray($page->valueCards ?? []);
+    $productCards = $page->asArray($page->homeProducts() ?? []);
+    $valueCards = array_slice($page->asArray($page->valueCards ?? []), 0, 3);
     $dataPanel = $page->asArray($page->dataPanel ?? []);
     $dataStats = $page->asArray($dataPanel['stats'] ?? []);
     $dataStatsD = $page->asArray($dataStats[0] ?? []);
     $dataStatsT = $page->asArray($dataStats[1] ?? []);
     $aboutPanel = $page->asArray($page->aboutPanel ?? []);
-    $partnerLogos = $page->asArray($page->partnerLogos ?? []);
+    $partnerLogosAll = $page->asArray($page->partnerLogos ?? []);
+    $homePartnersLimit = max(0, (int) ($page->homePartnersLimit ?? 12));
+    $partnerLogos = $homePartnersLimit > 0
+        ? array_slice($partnerLogosAll, 0, $homePartnersLimit)
+        : [];
 @endphp
 
 {{-- ----------------------------------------------------------------------
@@ -267,6 +271,7 @@
     <div class="layout-grid flex-col gap-8">
         <div class="values-stack">
             @foreach ($valueCards as $card)
+                @php $valueNum = str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT); @endphp
                 <article class="values-card" aria-labelledby="value-title-{{ $loop->iteration }}">
                     <div class="values-card-inner">
                         <img
@@ -282,7 +287,7 @@
                         <div class="values-card-body">
                             <div class="w-full h-16 md:h-20 flex justify-between items-center shrink-0">
                                 <div class="flex items-center gap-5 min-w-0">
-                                    <span class="text-eb2 text-white/90 tabular-nums shrink-0">{{ $card['num'] }}</span>
+                                    <span class="text-eb2 text-white/90 tabular-nums shrink-0">{{ $valueNum }}</span>
                                     <h2 id="value-title-{{ $loop->iteration }}" class="text-ch5 text-white/90 truncate">{{ $card['title'] }}</h2>
                                 </div>
                                 <p class="text-eb3 text-white/70 shrink-0 hidden md:block pb-0.5">( OUR VALUES )</p>
@@ -290,7 +295,7 @@
                             <div class="w-full h-px bg-white/25 shrink-0" aria-hidden="true"></div>
                             <p class="w-full max-w-[600px] pt-5 md:pt-6 text-cb3 md:text-cb2 text-white/90 shrink-0">{{ $card['body'] }}</p>
                             <div class="w-full flex-1 min-h-4" aria-hidden="true"></div>
-                            <span class="values-card-num self-end" aria-hidden="true">{{ $card['num'] }}</span>
+                            <span class="values-card-num self-end" aria-hidden="true">{{ $valueNum }}</span>
                         </div>
                     </div>
                 </article>
@@ -380,11 +385,11 @@
         <div class="w-full lg:w-[718px] shrink-0 px-6 md:px-12 lg:px-24 pt-6 md:pt-8 lg:pt-10 flex flex-col items-start gap-8 md:gap-9">
             <div class="w-full flex flex-col items-start gap-4">
                 <span class="accent-bar" aria-hidden="true"></span>
-                <h2 class="text-eh1 uppercase text-gray3">{{ $aboutPanel['enTitle'] ?? 'About' }}</h2>
+                <h2 class="text-eh1 uppercase text-gray3">About</h2>
             </div>
             <p class="w-full text-ch4 text-gray5 whitespace-pre-line">{{ $aboutPanel['headline'] ?? '' }}</p>
             <p class="w-full text-cb2 text-gray3">{{ $aboutPanel['body'] ?? '' }}</p>
-            <a href="{{ $aboutPanel['link'] ?? '/about/' }}" class="btn-dark">
+            <a href="/about/" class="btn-dark">
                 <span class="btn-dark-icon" aria-hidden="true">
                     <i data-lucide="arrow-right"></i>
                 </span>
@@ -404,8 +409,8 @@
                     decoding="async"
                 >
                 <div class="about-badge">
-                    <p class="text-eb2 text-gray5">{{ $aboutPanel['badgeEn'] ?? '' }}</p>
-                    <p class="text-cb3 text-gray3">{{ $aboutPanel['badgeZh'] ?? '' }}</p>
+                    <p class="text-eb2 text-gray5">Since 1995 ・ Taoyuan, Taiwan</p>
+                    <p class="text-eb3 text-gray3">Luzhu Headquarters</p>
                 </div>
             </div>
         </div>
@@ -430,7 +435,7 @@
                         <div class="partner-logo">
                             <img
                                 src="{{ $logo['image'] }}"
-                                alt="{{ $logo['alt'] ?? '' }}"
+                                alt="{{ $logo['name'] ?? '' }}"
                                 draggable="false"
                                 loading="lazy"
                                 decoding="async"
