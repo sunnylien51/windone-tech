@@ -91,7 +91,7 @@ description: 聯絡我們
 
             {{-- 右：線上諮詢表單（Netlify Forms；bot-field 為防機器人蜜罐） --}}
             <div
-                class="w-full flex-1 min-w-0 p-6 md:p-10 lg:p-16 bg-white rounded-3xl md:rounded-[40px] flex flex-col items-start gap-8"
+                class="w-full flex-1 min-w-0 px-6 py-10 md:p-10 lg:p-16 bg-white rounded-2xl md:rounded-[40px] flex flex-col items-start gap-8"
                 data-aos="fade-up"
                 data-aos-delay="100"
             >
@@ -113,7 +113,7 @@ description: 聯絡我們
                         <label>請勿填寫：<input name="bot-field" tabindex="-1" autocomplete="off"></label>
                     </p>
 
-                    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-8">
+                    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-4 md:gap-y-8">
                         <div class="form-field">
                             <label for="contact-name" class="form-label">姓名</label>
                             <input id="contact-name" name="name" type="text" class="form-control" placeholder="請輸入姓名" autocomplete="name" required>

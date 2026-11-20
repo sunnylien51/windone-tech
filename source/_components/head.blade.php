@@ -1,5 +1,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{-- favicon 盡早宣告；?v= 用來打掉 Chrome 兇殘快取（換圖／修壞掉時加一） --}}
+<link rel="icon" type="image/png" href="/favicon.png?v=20261120" sizes="48x48">
+<link rel="icon" type="image/png" href="/images/favicon.png?v=20261120" sizes="32x32">
+<link rel="shortcut icon" href="/favicon.ico?v=20261120">
+<link rel="apple-touch-icon" href="/images/favicon.png?v=20261120">
 @php
     $pageTitle = $page->title ? $page->title . ' | ' . $page->siteName : $page->siteName;
     $pageDescription = $page->description ?? $page->siteDescription;
@@ -25,12 +30,6 @@
 <meta property="og:title" content="{{ $pageTitle }}">
 <meta property="og:description" content="{{ $pageDescription }}">
 <meta name="twitter:card" content="summary_large_image">
-
-{{-- favicon.ico 實際為 PNG；優先宣告 image/png，避免 Chrome 當 x-icon 解失敗 --}}
-<link rel="icon" type="image/png" href="/favicon.png?v=3" sizes="32x32">
-<link rel="icon" type="image/png" href="/images/favicon.png?v=3" sizes="32x32">
-<link rel="shortcut icon" type="image/png" href="/favicon.png?v=3">
-<link rel="apple-touch-icon" href="/images/favicon.png?v=3">
 
 @php
     // 字型：Latin（Outfit／Tenor）每語系都載；CJK 只載當前語系，避免 TC＋JP 雙份

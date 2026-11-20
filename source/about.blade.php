@@ -29,8 +29,7 @@ description: 關於我們
         >
             <div class="w-full flex flex-col items-start gap-3">
                 <span class="accent-bar" aria-hidden="true"></span>
-                <h2 class="w-full text-ch3 text-gray5 whitespace-pre-line">為 PCB 廠及半導體封測廠
-提供高精度的製程支援</h2>
+                <h2 class="w-full text-ch3 text-gray5 whitespace-pre-line">深耕電子與 IC 載板產業<br>提供高精密製程解決方案</h2>
             </div>
             <div class="w-full flex justify-end">
                 <p class="w-full max-w-[560px] text-cb2 text-gray3">崴東科技有限公司深耕電子產業相關領域，專注於IC載板產業之製程耗材、精密刀具與相關應用產品，致力於提供客戶專業、可靠且具競爭力的產品與技術服務。</br>
@@ -52,18 +51,18 @@ description: 關於我們
             </div>
 
             <div
-                class="w-full border-t border-b border-gray2 flex flex-col lg:flex-row items-stretch"
+                class="w-full border-t border-b border-gray2/50 flex flex-col lg:flex-row items-stretch"
                 data-aos="fade-up"
             >
                 <article class="flex-1 px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-4">
                     <h3 class="text-ch5 text-gray5">創新突破</h3>
                     <p class="w-full text-cb2 text-gray3">秉持創新突破的精神，持續提升產品技術與製程應用。我們深入了解客戶需求，協助解決生產難題，創造更高的作業效率與競爭優勢。</p>
                 </article>
-                <article class="flex-1 px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-4 border-t lg:border-t-0 lg:border-l border-gray2">
+                <article class="flex-1 px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-4 border-t lg:border-t-0 lg:border-l border-gray2/50">
                     <h3 class="text-ch5 text-gray5">專業服務</h3>
                     <p class="w-full text-cb2 text-gray3">真正的價值不僅在於提供產品，更在於專業服務與即時支援。以務實態度回應製程需求，讓客戶在面對產線挑戰時擁有穩健依靠。</p>
                 </article>
-                <article class="flex-1 px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-4 border-t lg:border-t-0 lg:border-l border-gray2">
+                <article class="flex-1 px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-4 border-t lg:border-t-0 lg:border-l border-gray2/50">
                     <h3 class="text-ch5 text-gray5">永續經營</h3>
                     <p class="w-full text-cb2 text-gray3">以永續經營為核心，以專業技術為基礎、客戶需求為核心。透過持續精進品質與服務，攜手合作夥伴共同成長，共創產業新價值。</p>
                 </article>
@@ -95,31 +94,31 @@ description: 關於我們
                 </div>
 
                 <dl class="w-full border-t border-gray1 flex flex-col items-start">
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">公司名稱</dt>
-                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">待客戶提供</dd>
+                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">崴東科技有限公司</dd>
                     </div>
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">成立年份</dt>
-                        <dd class="flex-1 min-w-0 text-cb2 text-gray5">1995 年（暫定）</dd>
+                        <dd class="flex-1 min-w-0 text-cb2 text-gray5">1995 年</dd>
                     </div>
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">地址</dt>
                         <dd class="flex-1 min-w-0 text-cb2 text-gray5">桃園市蘆竹區大新路257號3樓</dd>
                     </div>
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">電話</dt>
                         <dd class="flex-1 min-w-0 text-cb2 text-gray5">
                             <a href="tel:+88633235998" class="transition-colors hover:text-main1">03-3235998</a>
                         </dd>
                     </div>
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">Email</dt>
-                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">待客戶提供</dd>
+                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">sylvia@windone-tech.com</dd>
                     </div>
-                    <div class="w-full py-4 md:py-6 border-b border-gray1 flex flex-row items-start gap-4">
+                    <div class="w-full py-4 md:py-5 border-b border-gray1 flex flex-row items-start gap-4">
                         <dt class="w-20 sm:w-40 shrink-0 text-cb2 text-gray3">營業項目</dt>
-                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">待客戶提供</dd>
+                        <dd class="flex-1 min-w-0 text-cb2 text-gray3">精密刀具、加工治具、膜（膠）捲類耗材、特殊鍍膜與清洗表面處理，以及委外代工切割。</dd>
                     </div>
                 </dl>
             </div>

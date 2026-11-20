@@ -66,24 +66,27 @@ if (backToTopBtn) {
 
 /* ---------- Mobile menu ---------- */
 const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileMenuIcon = document.getElementById('mobile-menu-icon');
 const navMenu = document.getElementById('nav-menu');
 const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 
 function setMobileMenuIcon(name) {
-    if (!mobileMenuIcon) {
+    if (!mobileMenuBtn) {
         return;
     }
 
-    mobileMenuIcon.setAttribute('data-lucide', name);
+    // Lucide 會把 <i> 換成 <svg>，舊節點會失效；每次在按鈕內重建再 createIcons
+    const icon = document.createElement('i');
+    icon.id = 'mobile-menu-icon';
+    icon.className = 'w-5 h-5';
+    icon.setAttribute('data-lucide', name);
+    mobileMenuBtn.replaceChildren(icon);
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
 
-    if (mobileMenuBtn) {
-        mobileMenuBtn.setAttribute('aria-expanded', name === 'x' ? 'true' : 'false');
-        mobileMenuBtn.setAttribute('aria-label', name === 'x' ? '關閉選單' : '開啟選單');
-    }
+    mobileMenuBtn.setAttribute('aria-expanded', name === 'x' ? 'true' : 'false');
+    mobileMenuBtn.setAttribute('aria-label', name === 'x' ? '關閉選單' : '開啟選單');
 }
 
 function lockPageScroll() {

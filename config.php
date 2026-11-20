@@ -220,7 +220,7 @@ return [
         ],
         // 產品列表＋內頁（圖暫用既有 product*.webp；有專圖再換路徑）
         // body：卡片 line-clamp-2；lead／applications／specs|steps：內頁用
-        // kind：product＝規格表；service＝流程步驟
+        // applications 會併入規格重點第一列「適用場景」；kind：product＝規格表；service＝另加流程步驟
         'groups' => [
             [
                 'slug' => 'tools',

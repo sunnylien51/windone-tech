@@ -7,17 +7,31 @@
 @php
     $slug = $page->getFilename();
     $product = $page->productBySlug($slug);
-    $categoryTitle = $product['categoryTitle'] ?? '';
-    $title = $product['title'] ?? ($page->title ?? '');
-    $lead = $product['lead'] ?? ($product['body'] ?? '');
-    $image = $product['image'] ?? '/images/product1.webp';
-    $kind = $product['kind'] ?? 'product';
-    $applications = $page->asArray($product['applications'] ?? []);
-    $specs = $page->asArray($product['specs'] ?? []);
-    $steps = $page->asArray($product['steps'] ?? []);
-    $related = $page->relatedProducts($slug, 3);
+    $categoryTitle = is_array($product) ? ($product['categoryTitle'] ?? '') : '';
+    $title = is_array($product) ? ($product['title'] ?? ($page->title ?? '')) : ($page->title ?? '');
+    $lead = is_array($product) ? ($product['lead'] ?? ($product['body'] ?? '')) : '';
+    $image = is_array($product) ? ($product['image'] ?? '/images/product1.webp') : '/images/product1.webp';
+    $applications = is_array($product) ? $page->asArray($product['applications'] ?? []) : [];
+    $specs = is_array($product) ? $page->asArray($product['specs'] ?? []) : [];
+    $related = $product ? $page->relatedProducts($slug, 3) : [];
     $contactHref = '/contact/?product=' . rawurlencode($title);
-    $isService = $kind === 'service';
+
+    // 適用場景併入規格重點表格（一列）
+    $specRows = $specs;
+    $appTitles = [];
+    foreach ($applications as $app) {
+        $app = is_array($app) ? $app : (array) $app;
+        $appTitle = trim((string) ($app['title'] ?? ''));
+        if ($appTitle !== '') {
+            $appTitles[] = $appTitle;
+        }
+    }
+    if (count($appTitles) > 0) {
+        array_unshift($specRows, [
+            'label' => '適用場景',
+            'value' => implode('、', $appTitles),
+        ]);
+    }
 @endphp
 
 @if (!$product)
@@ -50,13 +64,10 @@
         >
 
         <div class="layout-grid relative z-10 flex-col pt-32 md:pt-40 lg:pt-44 pb-14 md:pb-16 lg:pb-20">
-            {{-- 首屏：以 stage 頂端為觸發點，進頁即顯示 --}}
+            {{-- 首屏不加 AOS：避免 CDN／JS 未就緒時整區卡在 opacity:0 看起來空白 --}}
             <nav
                 aria-label="麵包屑"
                 class="inline-flex items-center overflow-hidden rounded-[20px] bg-white px-1.5 outline-inset outline-gray1 self-start"
-                data-aos="fade-up"
-                data-aos-anchor="#product-stage"
-                data-aos-offset="0"
             >
                 <a
                     href="/"
@@ -70,37 +81,50 @@
             </nav>
 
             <div class="product-stage-grid w-full mt-10 md:mt-12 lg:mt-14">
-                <div
-                    class="product-stage-copy flex flex-col items-start gap-6 md:gap-8"
-                    data-aos="fade-up"
-                    data-aos-anchor="#product-stage"
-                    data-aos-offset="0"
-                >
+                <div class="product-stage-copy flex flex-col items-start gap-6 md:gap-8">
                     <div class="w-full flex flex-col items-start gap-3">
-                        <span class="accent-bar" aria-hidden="true"></span>
+                        
                         @if ($categoryTitle !== '')
                             <p class="text-cb3 text-main2">{{ $categoryTitle }}</p>
                         @endif
+                        <span class="accent-bar" aria-hidden="true"></span>
                         <h1 class="w-full text-ch3 text-gray5">{{ $title }}</h1>
                         @if ($lead !== '')
                             <p class="w-full max-w-[520px] text-cb2 text-gray3">{{ $lead }}</p>
                         @endif
                     </div>
-                    <a href="{{ $contactHref }}" class="btn-dark">
+
+                    @if (count($specRows) > 0)
+                        {{-- 規格重點：緊接簡介下方 --}}
+                        <div class="w-full flex flex-col items-start gap-4" aria-label="規格重點">
+                            <h2 class="text-ch5 text-gray5">規格重點</h2>
+                            <dl class="w-full flex flex-col border-t border-gray2">
+                                @foreach ($specRows as $spec)
+                                    @php
+                                        $specLabel = $spec['label'] ?? '';
+                                        $specValue = $spec['value'] ?? '';
+                                    @endphp
+                                    @if ($specLabel === '')
+                                        @continue
+                                    @endif
+                                    <div class="product-spec-row w-full py-4 border-b border-gray2 flex flex-col md:flex-row md:items-baseline gap-1 md:gap-6">
+                                        <dt class="product-spec-label text-cb3 text-gray3 md:w-28 lg:w-32 shrink-0">{{ $specLabel }}</dt>
+                                        <dd class="product-spec-value text-cb2 text-gray5 flex-1 m-0">{{ $specValue }}</dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+                        </div>
+                    @endif
+
+                    <a href="/products/" class="btn-dark">
                         <span class="btn-dark-icon" aria-hidden="true">
                             <i data-lucide="arrow-right"></i>
                         </span>
-                        <span class="text-cb2 text-white">立即詢價</span>
+                        <span class="text-cb2 text-white">返回產品列表</span>
                     </a>
                 </div>
 
-                <div
-                    class="product-stage-visual relative w-full"
-                    data-aos="fade-up"
-                    data-aos-delay="100"
-                    data-aos-anchor="#product-stage"
-                    data-aos-offset="0"
-                >
+                <div class="product-stage-visual relative w-full">
                     <div class="product-stage-shadow-tilt" aria-hidden="true">
                         <div class="product-stage-shadow">
                             <img src="{{ $image }}" alt="" class="product-stage-shadow-img" decoding="async">
@@ -111,7 +135,7 @@
                             <img
                                 src="{{ $image }}"
                                 alt="{{ $title }}"
-                                class="product-stage-img w-full max-w-[420px] h-auto object-contain"
+                                class="product-stage-img w-full w-full h-auto object-contain"
                                 width="420"
                                 height="420"
                                 fetchpriority="high"
@@ -125,103 +149,6 @@
     </section>
 
     <div class="layout-grid flex-col pt-14 md:pt-16 lg:pt-20 pb-20 md:pb-24 lg:pb-28 gap-16 md:gap-20 lg:gap-24">
-        @if (count($applications) > 0)
-            {{-- ----------------------------------------------------------------------
-                 ★ SECTION · Product applications - 適用場景
-                 ---------------------------------------------------------------------- --}}
-            <section
-                class="w-full flex flex-col items-start gap-8 md:gap-10"
-                aria-label="適用場景"
-            >
-                <div class="w-full flex flex-col items-start gap-3" data-aos="fade-up">
-                    <span class="accent-bar" aria-hidden="true"></span>
-                    <h2 class="w-full text-ch3 text-gray5">適用場景</h2>
-                </div>
-                <div
-                    class="w-full border-t border-b border-gray2 grid grid-cols-1 md:grid-cols-3"
-                    data-aos="fade-up"
-                >
-                    @foreach ($applications as $app)
-                        @php
-                            $appTitle = $app['title'] ?? '';
-                            $appBody = $app['body'] ?? '';
-                        @endphp
-                        @if ($appTitle === '')
-                            @continue
-                        @endif
-                        <article class="px-6 md:px-8 lg:px-10 pt-10 md:pt-12 pb-12 md:pb-14 flex flex-col items-start gap-3{{ $loop->first ? '' : ' border-t md:border-t-0 md:border-l border-gray2' }}">
-                            <p class="text-eb3 text-main2 tabular-nums">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</p>
-                            <h3 class="text-ch5 text-gray5">{{ $appTitle }}</h3>
-                            @if ($appBody !== '')
-                                <p class="text-cb2 text-gray3">{{ $appBody }}</p>
-                            @endif
-                        </article>
-                    @endforeach
-                </div>
-            </section>
-        @endif
-
-        @if ($isService && count($steps) > 0)
-            {{-- ----------------------------------------------------------------------
-                 ★ SECTION · Product steps - 服務流程
-                 ---------------------------------------------------------------------- --}}
-            <section
-                class="w-full flex flex-col items-start gap-8 md:gap-10"
-                aria-label="服務流程"
-            >
-                <div class="w-full flex flex-col items-start gap-3" data-aos="fade-up">
-                    <span class="accent-bar" aria-hidden="true"></span>
-                    <h2 class="w-full text-ch3 text-gray5">服務流程</h2>
-                </div>
-                <ol class="w-full flex flex-col border-t border-gray2" data-aos="fade-up">
-                    @foreach ($steps as $step)
-                        @php
-                            $stepTitle = $step['title'] ?? '';
-                            $stepBody = $step['body'] ?? '';
-                        @endphp
-                        @if ($stepTitle === '')
-                            @continue
-                        @endif
-                        <li class="w-full py-6 md:py-8 border-b border-gray2 flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8">
-                            <span class="text-eb2 text-main2 tabular-nums shrink-0 w-12">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
-                            <h3 class="text-ch5 text-gray5 md:w-48 lg:w-56 shrink-0">{{ $stepTitle }}</h3>
-                            @if ($stepBody !== '')
-                                <p class="text-cb2 text-gray3 flex-1">{{ $stepBody }}</p>
-                            @endif
-                        </li>
-                    @endforeach
-                </ol>
-            </section>
-        @elseif (!$isService && count($specs) > 0)
-            {{-- ----------------------------------------------------------------------
-                 ★ SECTION · Product specs - 規格重點
-                 ---------------------------------------------------------------------- --}}
-            <section
-                class="w-full flex flex-col items-start gap-8 md:gap-10"
-                aria-label="規格重點"
-            >
-                <div class="w-full flex flex-col items-start gap-3" data-aos="fade-up">
-                    <span class="accent-bar" aria-hidden="true"></span>
-                    <h2 class="w-full text-ch3 text-gray5">規格重點</h2>
-                </div>
-                <dl class="w-full flex flex-col border-t border-gray2" data-aos="fade-up">
-                    @foreach ($specs as $spec)
-                        @php
-                            $specLabel = $spec['label'] ?? '';
-                            $specValue = $spec['value'] ?? '';
-                        @endphp
-                        @if ($specLabel === '')
-                            @continue
-                        @endif
-                        <div class="w-full py-5 md:py-6 border-b border-gray2 flex flex-col md:flex-row md:items-baseline gap-2 md:gap-10">
-                            <dt class="text-cb3 text-gray3 md:w-40 lg:w-48 shrink-0">{{ $specLabel }}</dt>
-                            <dd class="text-cb1 text-gray5 flex-1">{{ $specValue }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-            </section>
-        @endif
-
         {{-- ----------------------------------------------------------------------
              ★ SECTION · Product CTA - 詢價引導
              ---------------------------------------------------------------------- --}}

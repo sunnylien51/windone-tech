@@ -20,8 +20,8 @@ const mimeTypes = {
     '.gif': 'image/gif',
     '.webp': 'image/webp',
     '.avif': 'image/avif',
-    // 本站 favicon.ico 內容是 PNG；用 image/png 避免 Chrome 當 ICO 解失敗
-    '.ico': 'image/png',
+    // 真正 ICO（非 PNG 改名）
+    '.ico': 'image/x-icon',
     '.mp4': 'video/mp4',
     '.webm': 'video/webm',
     '.woff': 'font/woff',

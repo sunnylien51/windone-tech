@@ -378,7 +378,7 @@
      ---------------------------------------------------------------------- --}}
 <section
     id="home-about-partners"
-    class="relative w-full rounded-t-[40px] overflow-hidden"
+    class="relative w-full overflow-hidden"
     aria-label="關於我們與合作夥伴"
 >
     {{-- ----------------------------------------------------------------------
@@ -386,7 +386,7 @@
          ---------------------------------------------------------------------- --}}
     <div
         id="home-about"
-        class="w-full flex flex-col lg:flex-row items-stretch pt-24 md:pt-32 lg:pt-40"
+        class="w-full flex flex-col lg:flex-row items-stretch pt-24 pb-16 md:pt-32 lg:pt-40"
     >
         <div class="w-full lg:w-[718px] shrink-0 px-6 md:px-12 lg:px-24 pt-6 md:pt-8 lg:pt-10 flex flex-col items-start gap-8 md:gap-9">
             <div class="w-full flex flex-col items-start gap-4">
