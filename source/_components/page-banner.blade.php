@@ -38,14 +38,14 @@
             {{-- 麵包屑／標題／副標：以 banner 頂端為觸發點，進頁即顯示（勿等滾動） --}}
             <nav
                 aria-label="麵包屑"
-                class="inline-flex items-center overflow-hidden rounded-[20px] bg-white px-1.5 outline-inset outline-gray1"
+                class="breadcrumb-pill"
                 data-aos="fade-up"
                 data-aos-anchor="#page-banner"
                 data-aos-offset="0"
             >
                 <a
                     href="/"
-                    class="px-4 py-2 border-r border-gray1 text-eb3 text-gray3 transition-colors hover:text-main1"
+                    class="breadcrumb-pill-item border-r border-gray1 text-eb3 text-gray3 transition-colors hover:text-main1"
                 >WINDONE</a>
                 @foreach ($bannerCrumbs as $crumb)
                     @php
@@ -59,10 +59,10 @@
                     @if (!$isLast && !empty($crumbLink))
                         <a
                             href="{{ $crumbLink }}"
-                            class="px-4 py-2 border-r border-gray1 font-content text-[13px] text-gray3 tracking-wider transition-colors hover:text-main1"
+                            class="breadcrumb-pill-item border-r border-gray1 font-content text-[13px] text-gray3 tracking-wider transition-colors hover:text-main1"
                         >{{ $crumbName }}</a>
                     @else
-                        <span class="px-4 py-2 font-content text-[13px] tracking-wider text-gray5{{ $isLast ? '' : ' border-r border-gray1' }}">{{ $crumbName }}</span>
+                        <span class="breadcrumb-pill-item font-content text-[13px] tracking-wider text-gray5{{ $isLast ? '' : ' border-r border-gray1' }}">{{ $crumbName }}</span>
                     @endif
                 @endforeach
             </nav>

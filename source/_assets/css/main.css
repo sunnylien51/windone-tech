@@ -824,6 +824,22 @@
         z-index: 1;
     }
 
+    /* 麵包屑 pill：長品名不折行；超過螢幕寬時橫滑（隱藏捲軸） */
+    .breadcrumb-pill {
+        @apply inline-flex max-w-full items-center self-start rounded-[20px] bg-white px-1.5 outline-inset outline-gray1;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .breadcrumb-pill::-webkit-scrollbar {
+        display: none;
+    }
+
+    .breadcrumb-pill-item {
+        @apply shrink-0 whitespace-nowrap px-2.5 py-2 md:px-4;
+    }
+
     /* 內頁橫幅：底圖用絕對定位方圖，可延伸進下方內文；
        裁切交給 body.is-inner .site-main（不要裁在 banner 自己身上） */
     .page-banner {

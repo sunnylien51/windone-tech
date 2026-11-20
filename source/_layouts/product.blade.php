@@ -67,17 +67,17 @@
             {{-- 首屏不加 AOS：避免 CDN／JS 未就緒時整區卡在 opacity:0 看起來空白 --}}
             <nav
                 aria-label="麵包屑"
-                class="inline-flex items-center overflow-hidden rounded-[20px] bg-white px-1.5 outline-inset outline-gray1 self-start"
+                class="breadcrumb-pill"
             >
                 <a
                     href="/"
-                    class="px-4 py-2 border-r border-gray1 text-eb3 text-gray3 transition-colors hover:text-main1"
+                    class="breadcrumb-pill-item border-r border-gray1 text-eb3 text-gray3 transition-colors hover:text-main1"
                 >WINDONE</a>
                 <a
                     href="/products/"
-                    class="px-4 py-2 border-r border-gray1 font-content text-[13px] text-gray3 tracking-wider transition-colors hover:text-main1"
+                    class="breadcrumb-pill-item border-r border-gray1 font-content text-[13px] text-gray3 tracking-wider transition-colors hover:text-main1"
                 >產品介紹</a>
-                <span class="px-4 py-2 font-content text-[13px] tracking-wider text-gray5">{{ $title }}</span>
+                <span class="breadcrumb-pill-item font-content text-[13px] tracking-wider text-gray5">{{ $title }}</span>
             </nav>
 
             <div class="product-stage-grid w-full mt-10 md:mt-12 lg:mt-14">
