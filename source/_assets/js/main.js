@@ -809,11 +809,9 @@ if (productStage) {
     }
 }
 
-/* ---------- 產品介紹：分類選單＋列表篩選＋橫滑提示 ---------- */
+/* ---------- 產品介紹：分類選單橫滑提示（分類為獨立網址，不再前端篩選） ---------- */
 const productCatNav = document.getElementById('product-categories');
 if (productCatNav) {
-    const catTabs = Array.from(productCatNav.querySelectorAll('[data-product-cat]'));
-    const productGroups = Array.from(document.querySelectorAll('[data-product-group]'));
     const productCatWrap = productCatNav.closest('.product-cat-nav-wrap');
 
     const updateProductCatScrollHint = () => {
@@ -826,38 +824,6 @@ if (productCatNav) {
         productCatWrap.classList.toggle('can-scroll-left', canScroll && left > 2);
         productCatWrap.classList.toggle('can-scroll-right', canScroll && left < maxScroll - 2);
     };
-
-    const filterProductGroups = (slug) => {
-        const showAll = !slug || slug === 'all';
-        let firstVisible = null;
-        productGroups.forEach((group) => {
-            const match = showAll || group.getAttribute('data-product-group') === slug;
-            group.classList.toggle('is-hidden', !match);
-            if (match && !firstVisible) {
-                firstVisible = group;
-            }
-        });
-        return firstVisible;
-    };
-
-    const setActiveCat = (activeBtn) => {
-        catTabs.forEach((btn) => {
-            const on = btn === activeBtn;
-            btn.classList.toggle('is-active', on);
-            btn.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-    };
-
-    catTabs.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const slug = btn.getAttribute('data-product-cat') || '';
-            setActiveCat(btn);
-            const firstVisible = filterProductGroups(slug);
-            if (firstVisible && slug !== 'all') {
-                firstVisible.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
 
     productCatNav.addEventListener('scroll', updateProductCatScrollHint, { passive: true });
     window.addEventListener('resize', updateProductCatScrollHint, { passive: true });

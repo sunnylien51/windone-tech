@@ -996,7 +996,7 @@
     }
 
     .product-cat-item {
-        @apply relative z-[1] pb-4 text-cb2 text-gray3 cursor-pointer bg-transparent border-0;
+        @apply relative z-[1] inline-flex items-center pb-4 text-cb2 text-gray3 no-underline;
         transition: color 0.25s ease, box-shadow 0.25s ease;
     }
 
@@ -1025,6 +1025,24 @@
 
     .product-group.is-hidden {
         display: none;
+    }
+
+    /* 分類分隔線：用 ::after + z-index，避免被產品卡 box-shadow 蓋住
+       （子元素會畫在父層 border 之上，卡片陰影約可延伸至底邊） */
+    .product-group--divided {
+        position: relative;
+    }
+
+    .product-group--divided::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background-color: theme('colors.gray2');
+        z-index: 2;
+        pointer-events: none;
     }
 
     /* 產品列表卡・手機：橫向膠囊（圖左文右）；首頁 slider 不套用

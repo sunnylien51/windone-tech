@@ -12,12 +12,15 @@ return [
     'language' => 'zh-Hant',
     /*
     |--------------------------------------------------------------------------
-    | 產品內頁 collection（檔案由 bootstrap beforeBuild 依 productsPage 同步）
-    | 輸出：/products/{slug}/
+    | 產品 collection（檔案由 bootstrap beforeBuild 依 productsPage 同步）
+    | 產品內頁／分類分頁皆輸出：/products/{slug}/（分類與產品 slug 不可撞名）
     |--------------------------------------------------------------------------
     */
     'collections' => [
         'products' => [
+            'path' => 'products/{filename}',
+        ],
+        'product_categories' => [
             'path' => 'products/{filename}',
         ],
     ],
@@ -65,19 +68,19 @@ return [
             'image' => '/images/main_product1.webp',
             'title' => '高精密切割刀具',
             'body' => '包含鑽石切割刀與奈米鍍膜切膜刀，適用於載板切割及乾／濕膜製程。具備高硬度、低摩擦與穩定切削表現，協助提升良率並支援客製備料。',
-            'link' => '/products/nano-coated-cutter/',
+            'link' => '/products/tools/',
         ],
         [
             'image' => '/images/main_product2.webp',
             'title' => '加工治具',
             'body' => '涵蓋切割機治具組、彈匣框架、迴焊／清洗治具與 Holding Tray 等。可依需求客製並強化抗熱變形與定位穩定，提升加工與檢測效率。',
-            'link' => '/products/cutting-machine-jig/',
+            'link' => '/products/jigs/',
         ],
         [
             'image' => '/images/main_product3.webp',
             'title' => '膜(膠)捲類',
             'body' => '提供抗靜電多孔透氣膜、免刀式除塵紙捲與抗靜電黏塵滾輪。適用於真空吸附與無塵室清潔控管，兼具抗靜電、低殘膠與尺寸客製。',
-            'link' => '/products/antistatic-porous-film/',
+            'link' => '/products/films/',
         ],
     ],
 
@@ -173,7 +176,8 @@ return [
             ],
             'subtitle' => '涵蓋高精密切割刀具、特用膜類耗材、先進生產治具與表面處理。崴東以嚴格品管與客製化能力，全面滿足產線的高效能需求。',
         ],
-        // 分類選單：slug 對應下方 groups；label 顯示文字
+        // 分類選單：slug 對應下方 groups；網址 /products/{slug}/（all＝/products/）
+        // 分類 slug 不可與產品 slug 相同
         'categories' => [
             ['slug' => 'all', 'label' => '全部'],
             ['slug' => 'tools', 'label' => '精密刀具'],
